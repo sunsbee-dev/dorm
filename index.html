@@ -1,0 +1,743 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ระบบจัดการหอพัก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: ledger-like work surface, side nav on desktop, scrolling tab strip on phone; room numbers shown as key tags */
+:root{
+  --bg:#edf1ef; --surface:#ffffff; --surface-2:#f5f8f6; --ink:#15211d; --muted:#5a6b65; --line:#d5dfdb;
+  --accent:#0e6b57; --accent-ink:#ffffff; --accent-soft:#dbeee7;
+  --ok:#1b7443; --ok-soft:#ddf1e5; --warn:#9a5800; --warn-soft:#fbecd3; --bad:#b3261e; --bad-soft:#fde3df;
+  --idle:#7f8d88; --idle-soft:#e6ebe9; --fix:#5948b0; --fix-soft:#e9e6fa;
+  --water:#2a72b8; --elec:#c98a00;
+  --f-display:"Anuphan","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1513; --surface:#151f1c; --surface-2:#1b2723; --ink:#e3ece8; --muted:#97aaa3; --line:#283632;
+  --accent:#4cc39f; --accent-ink:#06231b; --accent-soft:#163a30;
+  --ok:#5bcf8a; --ok-soft:#153222; --warn:#f0b14a; --warn-soft:#382811; --bad:#ff8b7c; --bad-soft:#3b1a16;
+  --idle:#7c8b86; --idle-soft:#212b28; --fix:#ab9eff; --fix-soft:#262149;
+  --water:#6fb1ef; --elec:#f2c046; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1513; --surface:#151f1c; --surface-2:#1b2723; --ink:#e3ece8; --muted:#97aaa3; --line:#283632;
+  --accent:#4cc39f; --accent-ink:#06231b; --accent-soft:#163a30;
+  --ok:#5bcf8a; --ok-soft:#153222; --warn:#f0b14a; --warn-soft:#382811; --bad:#ff8b7c; --bad-soft:#3b1a16;
+  --idle:#7c8b86; --idle-soft:#212b28; --fix:#ab9eff; --fix-soft:#262149;
+  --water:#6fb1ef; --elec:#f2c046; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.55}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.25}
+h1{font-size:1.25rem;font-weight:700}
+h2{font-size:1.35rem;font-weight:700}
+h3{font-size:1rem;font-weight:600}
+button,input,select,textarea{font:inherit;color:inherit}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.app{display:grid;grid-template-columns:1fr;min-height:100%}
+.side{min-width:0;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.brand{display:flex;align-items:center;gap:10px;padding:12px 16px 4px}
+.brand .mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;flex:none}
+.brand .sub{font-size:.78rem;color:var(--muted)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;padding:6px 12px 8px;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:8px 12px;border-radius:8px;cursor:pointer;white-space:nowrap;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:8px}
+.tab:hover{background:var(--surface-2);color:var(--ink)}
+.tab[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+.tab .badge{background:var(--bad);color:#fff;border-radius:99px;font-size:.7rem;padding:0 6px;font-family:var(--f-mono)}
+.side-foot{display:none}
+main{padding-block:18px 48px;padding-inline:16px;min-width:0;max-width:1180px;width:100%}
+@media (min-width:900px){
+  .app{grid-template-columns:232px 1fr}
+  .side{position:sticky;top:0;height:100vh;border-bottom:0;border-right:1px solid var(--line);display:flex;flex-direction:column}
+  .brand{padding:20px 18px 12px}
+  nav.tabs{flex-direction:column;overflow:visible;padding:8px 12px}
+  .tab{padding:10px 12px}
+  .side-foot{display:block;margin-top:auto;padding:16px 18px;font-size:.78rem;color:var(--muted)}
+  main{padding-inline:32px;padding-block:26px 64px}
+}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px}
+.head p{margin:2px 0 0;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;min-height:38px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--bad)}
+.btn.danger[data-armed]{background:var(--bad);color:#fff;border-color:var(--bad)}
+.btn.sm{padding:4px 10px;min-height:30px;font-size:.85rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.monthpick{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px}
+.monthpick button{border:0;background:none;width:34px;height:34px;border-radius:6px;cursor:pointer;font-size:1.1rem;color:var(--muted)}
+.monthpick button:hover{background:var(--surface-2);color:var(--ink)}
+.monthpick span{min-width:128px;text-align:center;font-weight:600}
+.banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:var(--r);margin-bottom:16px;font-size:.9rem}
+.banner.info{background:var(--accent-soft);color:var(--ink)}
+.banner.warn{background:var(--warn-soft)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.panel > h3{margin-bottom:10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.stat{background:var(--surface);padding:14px 16px}
+.stat .k{font-size:.8rem;color:var(--muted);letter-spacing:.01em}
+.stat .v{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:1.55rem;font-weight:600;line-height:1.2;margin-top:2px}
+.stat .s{font-size:.8rem;color:var(--muted)}
+.stat.bad .v{color:var(--bad)}
+.meter{height:6px;border-radius:9px;background:var(--idle-soft);overflow:hidden;margin-top:8px}
+.meter i{display:block;height:100%;background:var(--accent)}
+.tag{font-family:var(--f-mono);font-weight:600;font-size:.88rem;display:inline-flex;align-items:center;gap:6px;padding:1px 8px 1px 6px;border:1px solid var(--line);background:var(--surface-2);border-radius:5px 12px 12px 5px;white-space:nowrap}
+.tag::before{content:"";width:6px;height:6px;border-radius:50%;border:1.5px solid var(--muted)}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:.78rem;font-weight:500;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)} .p-warn{background:var(--warn-soft);color:var(--warn)}
+.p-bad{background:var(--bad-soft);color:var(--bad)} .p-idle{background:var(--idle-soft);color:var(--muted)}
+.p-fix{background:var(--fix-soft);color:var(--fix)} .p-acc{background:var(--accent-soft);color:var(--accent)}
+.list{display:flex;flex-direction:column}
+.li{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);min-width:0}
+.li:first-child{border-top:0}
+.li .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.li .grow b{font-weight:500}
+.empty{color:var(--muted);font-size:.9rem;padding:8px 0}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+th{font-size:.78rem;color:var(--muted);font-weight:500;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+td input{width:96px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-family:var(--f-mono);text-align:right}
+td input:disabled{background:var(--surface-2);color:var(--muted)}
+.warnText{color:var(--warn);font-size:.8rem}
+.floors{display:flex;flex-direction:column;gap:10px}
+.floor{display:grid;grid-template-columns:44px 1fr;gap:8px;align-items:start}
+.floor .fl{font-size:.8rem;color:var(--muted);padding-top:12px}
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
+.cell{border:1px solid transparent;border-radius:8px;padding:8px 6px;text-align:center;cursor:pointer;font-family:var(--f-mono);font-weight:600;line-height:1.2}
+.cell small{display:block;font-family:var(--f-body);font-weight:500;font-size:.7rem;margin-top:2px}
+.cell:hover{border-color:var(--ink)}
+.c-paid{background:var(--ok-soft);color:var(--ok)} .c-unpaid{background:var(--warn-soft);color:var(--warn)}
+.c-overdue{background:var(--bad-soft);color:var(--bad)} .c-nobill{background:var(--accent-soft);color:var(--accent)}
+.c-vacant{background:var(--idle-soft);color:var(--muted)} .c-fix{background:var(--fix-soft);color:var(--fix)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.78rem;color:var(--muted);margin-top:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+svg.chart{width:100%;height:auto;display:block}
+svg.chart text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+svg.chart .grid line{stroke:var(--line)}
+.keys{display:flex;gap:14px;font-size:.8rem;color:var(--muted)}
+.keys i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:4px 12px;cursor:pointer;font-size:.88rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:.88rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.cols3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.col{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.col > h3{display:flex;justify-content:space-between}
+form.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld.wide{grid-column:1/-1}
+.fld label{font-size:.82rem;color:var(--muted)}
+.fld input,.fld select,.fld textarea{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);width:100%}
+.fld .hint{font-size:.75rem;color:var(--muted)}
+.check{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.modal{position:fixed;inset:0;background:rgba(10,18,15,.45);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px;z-index:50;overflow-y:auto}
+.modal .box{background:var(--surface);border-radius:14px;width:100%;max-width:620px;padding:20px;margin-top:4vh;box-shadow:0 20px 50px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:14px}
+.modal .box > header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.x{border:0;background:var(--surface-2);width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:1.2rem;flex:none}
+.actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.bill-items td:last-child{text-align:right}
+.bill-total{display:flex;justify-content:space-between;font-weight:600;font-size:1.1rem;padding-top:6px}
+pre.copy{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--f-body);font-size:.88rem;margin:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.9rem;z-index:60;max-width:calc(100% - 32px)}
+.loading{padding:40px 0;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="mark">ห</div><div><h1 id="dormName">หอพัก</h1><div class="sub" id="modeText">กำลังเชื่อมต่อข้อมูล</div></div></div>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="side-foot" id="sideFoot"></div>
+  </aside>
+  <main id="view"><div class="loading">กำลังโหลด</div></main>
+</div>
+<div class="modal" id="modal" hidden><div class="box" id="modalBox" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const p2 = n => String(n).padStart(2, '0');
+const round2 = n => Math.round((+n || 0) * 100) / 100;
+const baht = n => round2(n).toLocaleString('th-TH', {maximumFractionDigits: 2});
+const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); };
+const thisMonth = () => todayStr().slice(0, 7);
+const addMonths = (m, k) => { let [y, mo] = m.split('-').map(Number); mo += k; while (mo < 1) { mo += 12; y--; } while (mo > 12) { mo -= 12; y++; } return y + '-' + p2(mo); };
+const monthLabel = (m, short) => { const [y, mo] = m.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString('th-TH', short ? {month: 'short', year: '2-digit'} : {month: 'long', year: 'numeric'}); };
+const dateLabel = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('th-TH', {day: 'numeric', month: 'short', year: '2-digit'}) : '-';
+const daysBetween = (a, b) => Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+const addDays = (d, k) => { const x = new Date(d + 'T00:00:00'); x.setDate(x.getDate() + k); return x.getFullYear() + '-' + p2(x.getMonth() + 1) + '-' + p2(x.getDate()); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+/* ---------- data ---------- */
+const COLS = ['rooms', 'tenants', 'readings', 'bills', 'repairs', 'settings'];
+const S = {}; COLS.forEach(c => S[c] = {});
+const DEFAULTS = {dormName: 'หอพักของฉัน', waterRate: 18, waterMin: 0, elecRate: 8, commonFee: 0, internetFee: 0, dueDay: 5, promptpay: '', sample: false};
+const settings = () => ({...DEFAULTS, ...(S.settings.main || {})});
+let mode = 'loading', db = null, readOnly = false;
+const LS_KEY = 'dorm-manager-v1';
+
+const VIEWS = [
+  ['dashboard', 'ภาพรวม'], ['rooms', 'ห้องพัก'], ['tenants', 'ผู้เช่าและสัญญา'], ['meters', 'จดมิเตอร์'],
+  ['bills', 'บิลและการชำระ'], ['repairs', 'แจ้งซ่อม'], ['settings', 'ตั้งค่า']
+];
+const hashView = (location.hash || '').slice(1);
+const ui = {view: VIEWS.some(v => v[0] === hashView) ? hashView : 'dashboard', month: thisMonth(), billFilter: 'all', tenantFilter: 'active'};
+
+function loadLocal() { try { const raw = localStorage.getItem(LS_KEY); if (raw) { const o = JSON.parse(raw); COLS.forEach(c => S[c] = o[c] || {}); } } catch (e) {} }
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
+function dbErr(e) {
+  const c = e && e.code;
+  if (c === 'quota_exceeded') return 'พื้นที่เก็บข้อมูลเต็ม ลองลบข้อมูลเก่าที่ไม่ใช้แล้ว';
+  if (c === 'invalid_argument') return 'บัญชีนี้ไม่มีสิทธิ์แก้ไขข้อมูล หรือข้อมูลไม่ถูกต้อง';
+  if (c === 'resource_exhausted') return 'บันทึกถี่เกินไป รอสักครู่แล้วลองใหม่';
+  return 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง';
+}
+async function put(col, id, data) {
+  if (readOnly) { toast('บัญชีนี้ดูข้อมูลได้อย่างเดียว'); return false; }
+  S[col] = {...S[col], [id]: data}; scheduleRender();
+  if (mode === 'db') { try { await db.collection(col).doc(id).set(data); } catch (e) { toast(dbErr(e)); return false; } }
+  else saveLocal();
+  return true;
+}
+async function remove(col, id) {
+  if (readOnly) { toast('บัญชีนี้ดูข้อมูลได้อย่างเดียว'); return false; }
+  const o = {...S[col]}; delete o[id]; S[col] = o; scheduleRender();
+  if (mode === 'db') { try { await db.collection(col).doc(id).delete(); } catch (e) { toast(dbErr(e)); return false; } }
+  else saveLocal();
+  return true;
+}
+function subscribe() {
+  COLS.forEach(col => {
+    db.collection(col).onSnapshot(snap => {
+      const o = {}; snap.docs.forEach(d => { o[d.id] = d.data(); });
+      S[col] = o; scheduleRender();
+    }, err => { if (err && err.code !== 'revoked') toast('เชื่อมต่อข้อมูลไม่ได้ ลองเปิดหน้านี้ใหม่'); });
+  });
+}
+
+/* ---------- derived ---------- */
+const withId = col => Object.entries(S[col]).map(([id, v]) => ({id, ...v}));
+const rooms = () => withId('rooms').sort((a, b) => String(a.no).localeCompare(String(b.no), 'th', {numeric: true}));
+const roomById = id => S.rooms[id] ? {id, ...S.rooms[id]} : null;
+const tenantOf = roomId => withId('tenants').find(t => t.roomId === roomId && t.status === 'active') || null;
+const roomState = r => r.maintenance ? 'fix' : (tenantOf(r.id) ? 'occ' : 'vacant');
+const readingOf = (roomId, m) => S.readings[roomId + '_' + m];
+function prevReading(room, m) {
+  let best = null;
+  for (const rd of Object.values(S.readings)) if (rd.roomId === room.id && rd.month < m && (!best || rd.month > best.month)) best = rd;
+  return best ? {water: +best.water, elec: +best.elec, month: best.month} : {water: +room.startWater || 0, elec: +room.startElec || 0, month: null};
+}
+function usage(room, m) {
+  const cur = readingOf(room.id, m); if (!cur) return null;
+  const p = prevReading(room, m);
+  return {w: round2(cur.water - p.water), e: round2(cur.elec - p.elec), prev: p, cur};
+}
+const billOf = (roomId, m) => { const b = S.bills[roomId + '_' + m]; return b ? {id: roomId + '_' + m, ...b} : null; };
+const billTotal = b => round2((b.items || []).reduce((s, i) => s + (+i.amount || 0), 0));
+const billState = b => b.status === 'paid' ? 'paid' : (todayStr() > b.dueDate ? 'overdue' : 'unpaid');
+const BILL_PILL = {paid: ['p-ok', 'จ่ายแล้ว'], unpaid: ['p-warn', 'รอชำระ'], overdue: ['p-bad', 'เลยกำหนด']};
+const billPill = b => { const [c, t] = BILL_PILL[billState(b)]; return `<span class="pill ${c}">${t}</span>`; };
+const tag = no => `<span class="tag">${esc(no)}</span>`;
+
+/* ---------- render core ---------- */
+let rq = false, pending = false;
+const isEditing = () => { const a = document.activeElement; return a && a.closest && a.closest('#view') && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName); };
+function scheduleRender() {
+  if (rq) return; rq = true;
+  requestAnimationFrame(() => { rq = false; if (isEditing()) { pending = true; return; } render(); });
+}
+document.addEventListener('focusout', () => { if (pending) setTimeout(() => { if (pending && !isEditing()) { pending = false; render(); } }, 80); });
+
+function render() {
+  const st = settings();
+  $('#dormName').textContent = st.dormName;
+  $('#modeText').textContent = mode === 'db' ? 'ข้อมูลบันทึกออนไลน์' : mode === 'local' ? 'โหมดทดลองในเบราว์เซอร์' : 'กำลังเชื่อมต่อข้อมูล';
+  const overdue = withId('bills').filter(b => billState(b) === 'overdue').length;
+  const openRepairs = withId('repairs').filter(r => r.status !== 'done').length;
+  $('#tabs').innerHTML = VIEWS.map(([k, t]) => {
+    const n = k === 'bills' ? overdue : k === 'repairs' ? openRepairs : 0;
+    return `<button class="tab" data-act="go" data-v="${k}" ${ui.view === k ? 'aria-current="page"' : ''}>${t}${n ? `<span class="badge">${n}</span>` : ''}</button>`;
+  }).join('');
+  $('#sideFoot').textContent = 'วันนี้ ' + dateLabel(todayStr());
+  if (mode === 'loading') { $('#view').innerHTML = '<div class="loading">กำลังโหลดข้อมูลหอพัก</div>'; return; }
+  let banner = '';
+  if (mode === 'local') banner += `<div class="banner warn"><span>โหมดทดลอง: ข้อมูลเก็บไว้ในเบราว์เซอร์นี้เท่านั้น เปิดหน้านี้ผ่าน claude.ai โดยล็อกอินอยู่เพื่อบันทึกออนไลน์</span></div>`;
+  if (readOnly) banner += `<div class="banner warn"><span>บัญชีนี้ดูข้อมูลได้อย่างเดียว แก้ไขไม่ได้</span></div>`;
+  if (st.sample) banner += `<div class="banner info"><span>ตอนนี้แสดง <b>ข้อมูลตัวอย่าง</b> ให้ลองกดเล่นได้ พร้อมใช้จริงเมื่อไหร่ก็ล้างทิ้งได้เลย</span><button class="btn sm danger" data-act="clearSample" data-confirm="1">ล้างข้อมูลตัวอย่าง</button></div>`;
+  $('#view').innerHTML = banner + (VIEW_FN[ui.view] || viewDashboard)();
+}
+const monthPicker = () => `<div class="monthpick"><button data-act="month" data-k="-1" aria-label="เดือนก่อน">‹</button><span>${monthLabel(ui.month)}</span><button data-act="month" data-k="1" aria-label="เดือนถัดไป">›</button></div>`;
+
+/* ---------- dashboard ---------- */
+function viewDashboard() {
+  const m = ui.month, rs = rooms(), today = todayStr();
+  const occ = rs.filter(r => roomState(r) === 'occ').length, vac = rs.filter(r => roomState(r) === 'vacant').length, fix = rs.filter(r => roomState(r) === 'fix').length;
+  const rate = rs.length ? Math.round(occ / rs.length * 100) : 0;
+  const mb = withId('bills').filter(b => b.month === m);
+  const billed = mb.reduce((s, b) => s + billTotal(b), 0), got = mb.filter(b => b.status === 'paid').reduce((s, b) => s + billTotal(b), 0);
+  const unpaid = withId('bills').filter(b => b.status !== 'paid').sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const owed = unpaid.reduce((s, b) => s + billTotal(b), 0);
+  const noReading = rs.filter(r => roomState(r) === 'occ' && !readingOf(r.id, m));
+  const repairs = withId('repairs').filter(r => r.status !== 'done').sort((a, b) => (a.reportedAt || '').localeCompare(b.reportedAt || ''));
+  const ending = withId('tenants').filter(t => t.status === 'active' && t.contractEnd && daysBetween(today, t.contractEnd) <= 30).sort((a, b) => a.contractEnd.localeCompare(b.contractEnd));
+  const moving = withId('tenants').filter(t => t.status === 'active' && t.moveOutPlanned);
+
+  const hist = [...Array(6)].map((_, i) => addMonths(m, i - 5));
+  const incomeData = hist.map(h => { const bs = withId('bills').filter(b => b.month === h); return {label: monthLabel(h, true), v: [bs.reduce((s, b) => s + billTotal(b), 0), bs.filter(b => b.status === 'paid').reduce((s, b) => s + billTotal(b), 0)]}; });
+  const useData = hist.map(h => { let w = 0, e = 0; rs.forEach(r => { const u = usage(r, h); if (u) { w += Math.max(0, u.w); e += Math.max(0, u.e); } }); return {label: monthLabel(h, true), v: [w, e]}; });
+
+  if (!rs.length) return `<div class="head"><div><h2>ภาพรวม</h2><p>เริ่มจากเพิ่มห้องพักก่อน แล้วตัวเลขจะขึ้นที่หน้านี้</p></div></div>
+    <div class="panel"><p>ยังไม่มีห้องพักในระบบ</p><div class="row"><button class="btn primary" data-act="roomForm">เพิ่มห้องแรก</button><button class="btn" data-act="go" data-v="settings">ตั้งค่าเรทน้ำไฟ</button></div></div>`;
+
+  const li = (left, mid, right, act = '') => `<div class="li" ${act}>${left}<div class="grow">${mid}</div>${right}</div>`;
+  const more = (arr, n) => arr.length > n ? `<div class="small muted" style="padding-top:6px">และอีก ${arr.length - n} รายการ</div>` : '';
+
+  return `
+  <div class="head"><div><h2>ภาพรวม</h2><p>สรุปของเดือน${monthLabel(m)}</p></div>${monthPicker()}</div>
+  <div class="stats">
+    <div class="stat"><div class="k">ห้องทั้งหมด</div><div class="v">${rs.length}</div><div class="s">ว่าง ${vac} · ปิดซ่อม ${fix}</div></div>
+    <div class="stat"><div class="k">มีผู้เช่า</div><div class="v">${occ}</div><div class="s">อัตราเข้าพัก ${rate}%</div><div class="meter"><i style="width:${rate}%"></i></div></div>
+    <div class="stat"><div class="k">เก็บได้เดือนนี้ (บาท)</div><div class="v">${baht(got)}</div><div class="s">จากที่ออกบิล ${baht(billed)}</div><div class="meter"><i style="width:${billed ? Math.round(got / billed * 100) : 0}%"></i></div></div>
+    <div class="stat ${owed ? 'bad' : ''}"><div class="k">ค้างชำระรวม (บาท)</div><div class="v">${baht(owed)}</div><div class="s">${unpaid.length} บิล ทุกเดือน</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="panel"><h3>บิลที่ยังไม่จ่าย <button class="btn sm" data-act="go" data-v="bills">ดูทั้งหมด</button></h3><div class="list">
+      ${unpaid.length ? unpaid.slice(0, 6).map(b => li(tag(b.roomNo), `<b>${esc(b.tenantName)}</b> <span class="muted small">· ${monthLabel(b.month, true)} · ครบกำหนด ${dateLabel(b.dueDate)}</span>`, `<span class="num">${baht(billTotal(b))}</span> ${billPill(b)}`, `data-act="bill" data-id="${b.id}" style="cursor:pointer"`)).join('') + more(unpaid, 6) : '<div class="empty">ไม่มีบิลค้าง ทุกห้องจ่ายครบแล้ว</div>'}
+    </div></div>
+    <div class="panel"><h3>ยังไม่จดมิเตอร์ (${monthLabel(m, true)}) <button class="btn sm" data-act="go" data-v="meters">ไปจดมิเตอร์</button></h3><div class="list">
+      ${noReading.length ? noReading.slice(0, 6).map(r => li(tag(r.no), esc(tenantOf(r.id)?.name || ''), '<span class="pill p-acc">รอจด</span>')).join('') + more(noReading, 6) : '<div class="empty">จดครบทุกห้องที่มีผู้เช่าแล้ว</div>'}
+    </div></div>
+    <div class="panel"><h3>งานซ่อมที่ค้าง <button class="btn sm" data-act="go" data-v="repairs">ดูทั้งหมด</button></h3><div class="list">
+      ${repairs.length ? repairs.slice(0, 6).map(r => li(tag(roomById(r.roomId)?.no || '-'), `<b>${esc(r.title)}</b> <span class="muted small">· แจ้ง ${dateLabel(r.reportedAt)}</span>`, r.status === 'doing' ? '<span class="pill p-fix">กำลังซ่อม</span>' : '<span class="pill p-warn">รอดำเนินการ</span>')).join('') + more(repairs, 6) : '<div class="empty">ไม่มีงานซ่อมค้าง</div>'}
+    </div></div>
+    <div class="panel"><h3>สัญญาใกล้หมดและผู้แจ้งย้ายออก</h3><div class="list">
+      ${ending.length || moving.length ? [...ending.map(t => { const d = daysBetween(today, t.contractEnd); return li(tag(roomById(t.roomId)?.no || '-'), `<b>${esc(t.name)}</b> <span class="muted small">· หมด ${dateLabel(t.contractEnd)}</span>`, d < 0 ? '<span class="pill p-bad">หมดสัญญาแล้ว</span>' : `<span class="pill p-warn">อีก ${d} วัน</span>`, `data-act="tenantForm" data-id="${t.id}" style="cursor:pointer"`); }),
+        ...moving.filter(t => !ending.includes(t)).map(t => li(tag(roomById(t.roomId)?.no || '-'), `<b>${esc(t.name)}</b> <span class="muted small">· จะย้ายออก ${dateLabel(t.moveOutPlanned)}</span>`, '<span class="pill p-idle">แจ้งย้ายออก</span>', `data-act="tenantForm" data-id="${t.id}" style="cursor:pointer"`))].join('') : '<div class="empty">ไม่มีสัญญาที่จะหมดใน 30 วัน</div>'}
+    </div></div>
+    <div class="panel"><h3>รายรับย้อนหลัง 6 เดือน <span class="keys"><span><i style="background:var(--line)"></i>ออกบิล</span><span><i style="background:var(--accent)"></i>เก็บได้</span></span></h3>${barChart(incomeData, ['var(--line)', 'var(--accent)'])}</div>
+    <div class="panel"><h3>หน่วยน้ำไฟรวม <span class="keys"><span><i style="background:var(--water)"></i>น้ำ (ลบ.ม.)</span><span><i style="background:var(--elec)"></i>ไฟ (kWh)</span></span></h3>${barChart(useData, ['var(--water)', 'var(--elec)'], true)}</div>
+  </div>
+  <div class="panel" style="margin-top:14px"><h3>ผังห้อง · สถานะบิล${monthLabel(m)}</h3>${roomMap(m)}</div>`;
+}
+
+function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+function fmtAxis(v) { return v >= 1000 ? (v / 1000).toLocaleString('th-TH', {maximumFractionDigits: 1}) + 'k' : String(Math.round(v)); }
+function barChart(data, colors, dual) {
+  const W = 560, H = 210, L = 44, R = dual ? 44 : 8, T = 12, B = 28, iw = W - L - R, ih = H - T - B;
+  const maxes = dual ? [niceMax(Math.max(...data.map(d => d.v[0]))), niceMax(Math.max(...data.map(d => d.v[1])))] : [niceMax(Math.max(...data.flatMap(d => d.v)))];
+  const gw = iw / data.length, bw = Math.min(26, gw * 0.32);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img"><g class="grid">`;
+  for (let i = 0; i <= 4; i++) {
+    const y = T + ih - ih * i / 4;
+    s += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/>`;
+    s += `<text x="${L - 6}" y="${y + 4}" text-anchor="end">${fmtAxis(maxes[0] * i / 4)}</text>`;
+    if (dual) s += `<text x="${W - R + 6}" y="${y + 4}">${fmtAxis(maxes[1] * i / 4)}</text>`;
+  }
+  s += '</g>';
+  data.forEach((d, gi) => {
+    const cx = L + gw * gi + gw / 2;
+    d.v.forEach((v, si) => {
+      const mx = dual ? maxes[si] : maxes[0], h = Math.max(0, ih * v / mx), x = cx - bw - 2 + si * (bw + 4);
+      s += `<rect x="${x}" y="${T + ih - h}" width="${bw}" height="${h}" rx="3" fill="${colors[si]}"><title>${esc(d.label)}: ${baht(v)}</title></rect>`;
+    });
+    s += `<text x="${cx}" y="${H - 8}" text-anchor="middle">${esc(d.label)}</text>`;
+  });
+  return s + '</svg>';
+}
+function roomMap(m) {
+  const floors = {};
+  rooms().forEach(r => { const f = r.floor || '-'; (floors[f] = floors[f] || []).push(r); });
+  const keys = Object.keys(floors).sort((a, b) => String(a).localeCompare(String(b), 'th', {numeric: true}));
+  const cells = keys.map(f => `<div class="floor"><div class="fl">ชั้น ${esc(f)}</div><div class="rooms">${floors[f].map(r => {
+    const st = roomState(r); let c = 'vacant', t = 'ว่าง';
+    if (st === 'fix') { c = 'fix'; t = 'ปิดซ่อม'; }
+    else if (st === 'occ') { const b = billOf(r.id, m); if (!b) { c = 'nobill'; t = 'ยังไม่ออกบิล'; } else { c = billState(b); t = BILL_PILL[c][1]; } }
+    return `<button class="cell c-${c}" data-act="roomInfo" data-id="${r.id}">${esc(r.no)}<small>${t}</small></button>`;
+  }).join('')}</div></div>`).join('');
+  return `<div class="floors">${cells}</div><div class="legend"><span><i class="c-paid"></i>จ่ายแล้ว</span><span><i class="c-unpaid"></i>รอชำระ</span><span><i class="c-overdue"></i>เลยกำหนด</span><span><i class="c-nobill"></i>ยังไม่ออกบิล</span><span><i class="c-vacant"></i>ว่าง</span><span><i class="c-fix"></i>ปิดซ่อม</span></div>`;
+}
+
+/* ---------- rooms ---------- */
+function viewRooms() {
+  const rs = rooms();
+  const label = {occ: '<span class="pill p-ok">มีผู้เช่า</span>', vacant: '<span class="pill p-idle">ว่าง</span>', fix: '<span class="pill p-fix">ปิดซ่อม</span>'};
+  return `<div class="head"><div><h2>ห้องพัก</h2><p>${rs.length} ห้อง · ว่าง ${rs.filter(r => roomState(r) === 'vacant').length} ห้อง</p></div><button class="btn primary" data-act="roomForm">เพิ่มห้อง</button></div>
+  ${rs.length ? `<div class="tablewrap"><table><thead><tr><th>ห้อง</th><th>ชั้น</th><th>ประเภท</th><th class="r">ค่าเช่า/เดือน</th><th>สถานะ</th><th>ผู้เช่า</th><th></th></tr></thead><tbody>
+  ${rs.map(r => `<tr><td>${tag(r.no)}</td><td>${esc(r.floor)}</td><td>${esc(r.type || '-')}</td><td class="r num">${baht(r.rent)}</td><td>${label[roomState(r)]}</td><td>${esc(tenantOf(r.id)?.name || '-')}</td><td class="r"><button class="btn sm" data-act="roomForm" data-id="${r.id}">แก้ไข</button></td></tr>`).join('')}
+  </tbody></table></div>` : '<div class="panel empty">ยังไม่มีห้องพัก กด "เพิ่มห้อง" เพื่อเริ่ม</div>'}`;
+}
+function roomForm(id) {
+  const r = id ? roomById(id) : {no: '', floor: '', type: 'ห้องพัดลม', rent: 3500, startWater: 0, startElec: 0, maintenance: false, note: ''};
+  const occupied = id && tenantOf(id);
+  modal(`<header><h2>${id ? 'แก้ไขห้อง ' + esc(r.no) : 'เพิ่มห้องพัก'}</h2><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  <form class="f" id="roomF">
+    <div class="fld"><label for="rf-no">เลขห้อง</label><input id="rf-no" name="no" required value="${esc(r.no)}"></div>
+    <div class="fld"><label for="rf-floor">ชั้น</label><input id="rf-floor" name="floor" value="${esc(r.floor)}" placeholder="เช่น 1"></div>
+    <div class="fld"><label for="rf-type">ประเภทห้อง</label><input id="rf-type" name="type" value="${esc(r.type)}" placeholder="แอร์ / พัดลม"></div>
+    <div class="fld"><label for="rf-rent">ค่าเช่าต่อเดือน (บาท)</label><input id="rf-rent" name="rent" type="number" min="0" step="1" required value="${esc(r.rent)}"></div>
+    <div class="fld"><label for="rf-sw">เลขมิเตอร์น้ำเริ่มต้น</label><input id="rf-sw" name="startWater" type="number" min="0" step="any" value="${esc(r.startWater)}"><span class="hint">ใช้เป็นค่าก่อนหน้าของการจดครั้งแรก</span></div>
+    <div class="fld"><label for="rf-se">เลขมิเตอร์ไฟเริ่มต้น</label><input id="rf-se" name="startElec" type="number" min="0" step="any" value="${esc(r.startElec)}"></div>
+    <div class="fld wide"><label class="check"><input type="checkbox" id="rf-fix" name="maintenance" ${r.maintenance ? 'checked' : ''}> ปิดห้องเพื่อซ่อมแซม (ไม่รับผู้เช่า)</label></div>
+    <div class="fld wide"><label for="rf-note">หมายเหตุ</label><input id="rf-note" name="note" value="${esc(r.note)}"></div>
+  </form>
+  <div class="actions">${id ? `<button class="btn danger" data-act="roomDelete" data-id="${id}" data-confirm="1" ${occupied ? 'disabled title="ย้ายผู้เช่าออกก่อนจึงลบห้องได้"' : ''}>ลบห้อง</button>` : ''}<button class="btn" data-act="close">ยกเลิก</button><button class="btn primary" data-act="roomSave" data-id="${id || ''}">บันทึก</button></div>`);
+}
+async function roomSave(id) {
+  const f = $('#roomF'); if (!f.reportValidity()) return;
+  const d = Object.fromEntries(new FormData(f));
+  const no = d.no.trim();
+  if (rooms().some(r => r.no === no && r.id !== id)) { toast('มีห้อง ' + no + ' อยู่แล้ว'); return; }
+  const old = id ? S.rooms[id] : {};
+  const data = {...old, no, floor: d.floor.trim() || no.charAt(0), type: d.type.trim(), rent: +d.rent || 0, startWater: +d.startWater || 0, startElec: +d.startElec || 0, maintenance: !!d.maintenance, note: d.note.trim()};
+  closeModal(); if (await put('rooms', id || 'r' + uid(), data)) toast('บันทึกห้อง ' + no + ' แล้ว');
+}
+
+/* ---------- tenants ---------- */
+function viewTenants() {
+  const all = withId('tenants'), f = ui.tenantFilter, today = todayStr();
+  const list = all.filter(t => f === 'active' ? t.status === 'active' : t.status !== 'active')
+    .sort((a, b) => String(roomById(a.roomId)?.no || '').localeCompare(String(roomById(b.roomId)?.no || ''), 'th', {numeric: true}));
+  return `<div class="head"><div><h2>ผู้เช่าและสัญญา</h2><p>${all.filter(t => t.status === 'active').length} คนพักอยู่ตอนนี้</p></div><button class="btn primary" data-act="tenantForm">เพิ่มผู้เช่าใหม่</button></div>
+  <div class="chips"><button class="chip" data-act="tFilter" data-f="active" aria-pressed="${f === 'active'}">พักอยู่</button><button class="chip" data-act="tFilter" data-f="moved" aria-pressed="${f !== 'active'}">ย้ายออกแล้ว</button></div>
+  ${list.length ? `<div class="cards">${list.map(t => {
+    const r = roomById(t.roomId), left = t.contractEnd ? daysBetween(today, t.contractEnd) : null;
+    const cpill = t.status !== 'active' ? `<span class="pill p-idle">ย้ายออก ${dateLabel(t.moveOut)}</span>` : left === null ? '' : left < 0 ? '<span class="pill p-bad">หมดสัญญาแล้ว</span>' : left <= 30 ? `<span class="pill p-warn">สัญญาเหลือ ${left} วัน</span>` : '<span class="pill p-ok">สัญญาปกติ</span>';
+    return `<div class="card"><div class="top"><div><h3>${esc(t.name)}</h3><div class="small muted">${esc(t.phone || '')}</div></div>${tag(r?.no || '-')}</div>
+    <dl class="kv"><dt>เข้าพัก</dt><dd>${dateLabel(t.moveIn)}</dd><dt>สิ้นสุดสัญญา</dt><dd>${dateLabel(t.contractEnd)}</dd><dt>เงินประกัน</dt><dd class="num">${baht(t.deposit)} บาท</dd>
+    ${t.status !== 'active' ? `<dt>คืนประกัน</dt><dd class="num">${baht(t.refund)} บาท</dd>` : ''}${t.emergencyName ? `<dt>ติดต่อฉุกเฉิน</dt><dd>${esc(t.emergencyName)} ${esc(t.emergencyPhone || '')}</dd>` : ''}</dl>
+    <div class="row" style="justify-content:space-between">${cpill}<div class="row"><button class="btn sm" data-act="tenantForm" data-id="${t.id}">แก้ไข</button>${t.status === 'active' ? `<button class="btn sm" data-act="moveOut" data-id="${t.id}">ย้ายออก</button>` : ''}</div></div></div>`;
+  }).join('')}</div>` : `<div class="panel empty">${f === 'active' ? 'ยังไม่มีผู้เช่า กด "เพิ่มผู้เช่าใหม่" เพื่อทำสัญญา' : 'ยังไม่มีประวัติผู้ย้ายออก'}</div>`}`;
+}
+function tenantForm(id, roomId) {
+  const t = id ? {id, ...S.tenants[id]} : {name: '', phone: '', idCard: '', emergencyName: '', emergencyPhone: '', roomId: roomId || '', moveIn: todayStr(), contractMonths: 12, deposit: '', note: '', moveOutPlanned: ''};
+  const choices = rooms().filter(r => r.id === t.roomId || roomState(r) === 'vacant');
+  if (!id && !choices.length) { toast('ไม่มีห้องว่าง เพิ่มห้องหรือย้ายผู้เช่าออกก่อน'); return; }
+  const defRent = roomById(t.roomId || choices[0]?.id)?.rent || 0;
+  modal(`<header><h2>${id ? 'แก้ไขข้อมูลผู้เช่า' : 'ผู้เช่าใหม่และสัญญาเช่า'}</h2><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  <form class="f" id="tenF">
+    <div class="fld"><label for="tf-name">ชื่อ-นามสกุล</label><input id="tf-name" name="name" required value="${esc(t.name)}"></div>
+    <div class="fld"><label for="tf-phone">เบอร์โทร</label><input id="tf-phone" name="phone" inputmode="tel" value="${esc(t.phone)}"></div>
+    <div class="fld"><label for="tf-id">เลขบัตรประชาชน</label><input id="tf-id" name="idCard" inputmode="numeric" value="${esc(t.idCard)}"></div>
+    <div class="fld"><label for="tf-room">ห้อง</label><select id="tf-room" name="roomId" required ${id && t.status !== 'active' ? 'disabled' : ''}>${choices.map(r => `<option value="${r.id}" ${r.id === t.roomId ? 'selected' : ''}>${esc(r.no)} · ${baht(r.rent)} บาท</option>`).join('')}</select></div>
+    <div class="fld"><label for="tf-en">ผู้ติดต่อฉุกเฉิน</label><input id="tf-en" name="emergencyName" value="${esc(t.emergencyName)}"></div>
+    <div class="fld"><label for="tf-ep">เบอร์ผู้ติดต่อฉุกเฉิน</label><input id="tf-ep" name="emergencyPhone" inputmode="tel" value="${esc(t.emergencyPhone)}"></div>
+    <div class="fld"><label for="tf-in">วันเข้าพัก</label><input id="tf-in" name="moveIn" type="date" required value="${esc(t.moveIn)}"></div>
+    <div class="fld"><label for="tf-months">ระยะสัญญา (เดือน)</label><input id="tf-months" name="contractMonths" type="number" min="1" value="${esc(t.contractMonths)}"><span class="hint" id="tf-endHint"></span></div>
+    <div class="fld"><label for="tf-dep">เงินประกัน (บาท)</label><input id="tf-dep" name="deposit" type="number" min="0" value="${esc(t.deposit === '' ? defRent * 2 : t.deposit)}"><span class="hint">ค่าเริ่มต้นคือค่าเช่า 2 เดือน</span></div>
+    ${id && t.status === 'active' ? `<div class="fld"><label for="tf-mop">แจ้งย้ายออกวันที่ (ถ้ามี)</label><input id="tf-mop" name="moveOutPlanned" type="date" value="${esc(t.moveOutPlanned || '')}"></div>` : ''}
+    <div class="fld wide"><label for="tf-note">หมายเหตุ</label><input id="tf-note" name="note" value="${esc(t.note)}"></div>
+  </form>
+  <div class="actions">${id ? `<button class="btn danger" data-act="tenantDelete" data-id="${id}" data-confirm="1">ลบประวัติ</button>` : ''}<button class="btn" data-act="close">ยกเลิก</button><button class="btn primary" data-act="tenantSave" data-id="${id || ''}">บันทึก</button></div>`, box => {
+    const upd = () => { const e = contractEnd($('#tf-in', box).value, +$('#tf-months', box).value); $('#tf-endHint', box).textContent = e ? 'สิ้นสุดสัญญา ' + dateLabel(e) : ''; };
+    $('#tf-in', box).addEventListener('input', upd); $('#tf-months', box).addEventListener('input', upd); upd();
+  });
+}
+const contractEnd = (start, months) => start && months > 0 ? addDays(addMonths(start.slice(0, 7), months) + start.slice(7), -1) : '';
+async function tenantSave(id) {
+  const f = $('#tenF'); if (!f.reportValidity()) return;
+  const d = Object.fromEntries(new FormData(f));
+  const old = id ? S.tenants[id] : {status: 'active', createdAt: todayStr()};
+  const data = {...old, name: d.name.trim(), phone: d.phone.trim(), idCard: d.idCard.trim(), emergencyName: d.emergencyName.trim(), emergencyPhone: d.emergencyPhone.trim(),
+    roomId: d.roomId || old.roomId, moveIn: d.moveIn, contractMonths: +d.contractMonths || 0, contractEnd: contractEnd(d.moveIn, +d.contractMonths), deposit: +d.deposit || 0, note: d.note.trim(), moveOutPlanned: d.moveOutPlanned || ''};
+  closeModal(); if (await put('tenants', id || 't' + uid(), data)) toast('บันทึกข้อมูล ' + data.name + ' แล้ว');
+}
+function moveOutForm(id) {
+  const t = S.tenants[id], r = roomById(t.roomId);
+  const owed = withId('bills').filter(b => b.tenantId === id && b.status !== 'paid').reduce((s, b) => s + billTotal(b), 0);
+  modal(`<header><h2>ย้ายออก · ${esc(t.name)}</h2><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  <p class="muted" style="margin:0">ห้อง ${esc(r?.no)} · เงินประกัน ${baht(t.deposit)} บาท${owed ? ` · <span style="color:var(--bad)">มีบิลค้าง ${baht(owed)} บาท</span>` : ''}</p>
+  <form class="f" id="moF">
+    <div class="fld"><label for="mo-date">วันที่ย้ายออก</label><input id="mo-date" name="moveOut" type="date" required value="${esc(t.moveOutPlanned || todayStr())}"></div>
+    <div class="fld"><label for="mo-ded">หักค่าเสียหาย/ทำความสะอาด (บาท)</label><input id="mo-ded" name="deduct" type="number" min="0" value="0"></div>
+    <div class="fld"><label for="mo-owed">หักบิลค้างชำระ (บาท)</label><input id="mo-owed" name="owed" type="number" min="0" value="${round2(owed)}"></div>
+    <div class="fld"><label>คืนเงินประกัน</label><div class="num" id="mo-refund" style="font-size:1.4rem;font-weight:600"></div></div>
+    <div class="fld wide"><label for="mo-note">หมายเหตุ</label><input id="mo-note" name="moveOutNote" placeholder="เช่น ผนังมีรอยต้องทาสี"></div>
+  </form>
+  <div class="actions"><button class="btn" data-act="close">ยกเลิก</button><button class="btn primary" data-act="moveOutSave" data-id="${id}">ยืนยันย้ายออก</button></div>`, box => {
+    const upd = () => { $('#mo-refund', box).textContent = baht(Math.max(0, (+t.deposit || 0) - (+$('#mo-ded', box).value || 0) - (+$('#mo-owed', box).value || 0))) + ' บาท'; };
+    box.addEventListener('input', upd); upd();
+  });
+}
+async function moveOutSave(id) {
+  const f = $('#moF'); if (!f.reportValidity()) return;
+  const d = Object.fromEntries(new FormData(f)), t = S.tenants[id];
+  const refund = Math.max(0, (+t.deposit || 0) - (+d.deduct || 0) - (+d.owed || 0));
+  closeModal();
+  if (await put('tenants', id, {...t, status: 'moved', moveOut: d.moveOut, deduct: +d.deduct || 0, owedDeducted: +d.owed || 0, refund, moveOutNote: d.moveOutNote.trim(), moveOutPlanned: ''})) toast('บันทึกย้ายออกแล้ว คืนประกัน ' + baht(refund) + ' บาท');
+}
+
+/* ---------- meters ---------- */
+function viewMeters() {
+  const m = ui.month, st = settings();
+  const rs = rooms().filter(r => roomState(r) === 'occ' || readingOf(r.id, m));
+  const done = rs.filter(r => readingOf(r.id, m)).length;
+  const billable = rs.filter(r => readingOf(r.id, m) && tenantOf(r.id) && !billOf(r.id, m)).length;
+  return `<div class="head"><div><h2>จดมิเตอร์น้ำไฟ</h2><p>จดแล้ว ${done} จาก ${rs.length} ห้อง · น้ำหน่วยละ ${baht(st.waterRate)} บาท · ไฟหน่วยละ ${baht(st.elecRate)} บาท</p></div>
+  <div class="row">${monthPicker()}<button class="btn primary" data-act="genBills" ${billable ? '' : 'disabled'}>ออกบิล ${billable ? billable + ' ห้อง' : ''}</button></div></div>
+  ${rs.length ? `<div class="tablewrap"><table><thead><tr><th>ห้อง</th><th>ผู้เช่า</th><th class="r">น้ำ ครั้งก่อน</th><th class="r">น้ำ ล่าสุด</th><th class="r">ใช้ (ลบ.ม.)</th><th class="r">ไฟ ครั้งก่อน</th><th class="r">ไฟ ล่าสุด</th><th class="r">ใช้ (kWh)</th><th>สถานะ</th></tr></thead><tbody>
+  ${rs.map(r => {
+    const cur = readingOf(r.id, m), p = prevReading(r, m), u = usage(r, m), b = billOf(r.id, m), lock = !!b;
+    const neg = u && (u.w < 0 || u.e < 0);
+    return `<tr data-room="${r.id}"><td>${tag(r.no)}</td><td>${esc(tenantOf(r.id)?.name || '-')}</td>
+    <td class="r num muted">${baht(p.water)}</td><td class="r"><input id="mw-${r.id}" data-meter="water" type="number" min="0" step="any" inputmode="decimal" value="${cur ? esc(cur.water) : ''}" ${lock ? 'disabled' : ''} aria-label="มิเตอร์น้ำห้อง ${esc(r.no)}"></td><td class="r num">${u ? baht(u.w) : '-'}</td>
+    <td class="r num muted">${baht(p.elec)}</td><td class="r"><input id="me-${r.id}" data-meter="elec" type="number" min="0" step="any" inputmode="decimal" value="${cur ? esc(cur.elec) : ''}" ${lock ? 'disabled' : ''} aria-label="มิเตอร์ไฟห้อง ${esc(r.no)}"></td><td class="r num">${u ? baht(u.e) : '-'}</td>
+    <td>${b ? `<button class="btn sm" data-act="bill" data-id="${b.id}">ออกบิลแล้ว</button>` : neg ? '<span class="warnText">เลขน้อยกว่าครั้งก่อน</span>' : cur ? '<span class="pill p-ok">จดแล้ว</span>' : '<span class="pill p-acc">รอจด</span>'}</td></tr>`;
+  }).join('')}</tbody></table></div><p class="small muted">พิมพ์เลขมิเตอร์แล้วกด Tab หรือแตะช่องอื่น ระบบจะบันทึกเองเมื่อกรอกครบทั้งน้ำและไฟ ห้องที่ออกบิลแล้วจะแก้เลขไม่ได้ ถ้าต้องแก้ให้ลบบิลนั้นก่อน</p>`
+  : '<div class="panel empty">ยังไม่มีห้องที่มีผู้เช่า</div>'}`;
+}
+async function saveMeterRow(tr) {
+  const roomId = tr.dataset.room, w = $('[data-meter=water]', tr).value, e = $('[data-meter=elec]', tr).value;
+  if (w === '' || e === '') return;
+  const id = roomId + '_' + ui.month, old = S.readings[id];
+  if (old && +old.water === +w && +old.elec === +e) return;
+  await put('readings', id, {roomId, month: ui.month, water: +w, elec: +e, readAt: todayStr()});
+}
+async function genBills() {
+  const m = ui.month, st = settings(); let n = 0;
+  for (const r of rooms()) {
+    const t = tenantOf(r.id), u = usage(r, m);
+    if (!t || !u || billOf(r.id, m)) continue;
+    const items = [{label: 'ค่าเช่าห้อง', amount: +r.rent || 0},
+      {label: `ค่าน้ำ ${baht(u.w)} หน่วย × ${baht(st.waterRate)}`, amount: round2(Math.max(u.w * st.waterRate, +st.waterMin || 0))},
+      {label: `ค่าไฟ ${baht(u.e)} หน่วย × ${baht(st.elecRate)}`, amount: round2(u.e * st.elecRate)}];
+    if (+st.commonFee > 0) items.push({label: 'ค่าส่วนกลาง', amount: +st.commonFee});
+    if (+st.internetFee > 0) items.push({label: 'ค่าอินเทอร์เน็ต', amount: +st.internetFee});
+    const bill = {roomId: r.id, roomNo: r.no, tenantId: t.id, tenantName: t.name, month: m, items, waterUnits: u.w, elecUnits: u.e,
+      dueDate: addMonths(m, 1) + '-' + p2(Math.min(28, Math.max(1, +st.dueDay || 5))), status: 'unpaid', createdAt: todayStr(), no: 'INV' + m.replace('-', '') + '-' + r.no};
+    bill.total = billTotal(bill);
+    if (await put('bills', r.id + '_' + m, bill)) n++;
+  }
+  toast(n ? `ออกบิล ${n} ห้องแล้ว` : 'ไม่มีห้องที่พร้อมออกบิล');
+}
+
+/* ---------- bills ---------- */
+function viewBills() {
+  const m = ui.month, f = ui.billFilter;
+  const all = withId('bills').filter(b => b.month === m).sort((a, b) => String(a.roomNo).localeCompare(String(b.roomNo), 'th', {numeric: true}));
+  const list = all.filter(b => f === 'all' || (f === 'paid' ? b.status === 'paid' : b.status !== 'paid'));
+  const sum = all.reduce((s, b) => s + billTotal(b), 0), paid = all.filter(b => b.status === 'paid').reduce((s, b) => s + billTotal(b), 0);
+  const older = withId('bills').filter(b => b.month < m && b.status !== 'paid');
+  return `<div class="head"><div><h2>บิลและการชำระ</h2><p>${all.length} บิล · ยอดรวม ${baht(sum)} บาท · เก็บแล้ว ${baht(paid)} บาท</p></div><div class="row">${monthPicker()}<button class="btn" data-act="go" data-v="meters">จดมิเตอร์และออกบิล</button></div></div>
+  ${older.length ? `<div class="banner warn"><span>ยังมีบิลเดือนก่อนค้างอยู่ ${older.length} บิล รวม ${baht(older.reduce((s, b) => s + billTotal(b), 0))} บาท</span><button class="btn sm" data-act="month" data-to="${older.sort((a, b) => a.month.localeCompare(b.month))[0].month}">ดูเดือนที่ค้าง</button></div>` : ''}
+  <div class="chips">${[['all', 'ทั้งหมด'], ['unpaid', 'ยังไม่จ่าย'], ['paid', 'จ่ายแล้ว']].map(([k, t]) => `<button class="chip" data-act="bFilter" data-f="${k}" aria-pressed="${f === k}">${t}</button>`).join('')}</div>
+  ${list.length ? `<div class="tablewrap"><table><thead><tr><th>ห้อง</th><th>ผู้เช่า</th><th class="r">น้ำ</th><th class="r">ไฟ</th><th class="r">ยอดรวม (บาท)</th><th>ครบกำหนด</th><th>สถานะ</th><th></th></tr></thead><tbody>
+  ${list.map(b => `<tr><td>${tag(b.roomNo)}</td><td>${esc(b.tenantName)}</td><td class="r num">${baht(b.waterUnits)}</td><td class="r num">${baht(b.elecUnits)}</td><td class="r num"><b>${baht(billTotal(b))}</b></td><td>${dateLabel(b.dueDate)}</td><td>${billPill(b)}</td>
+  <td class="r"><div class="row" style="justify-content:flex-end"><button class="btn sm" data-act="bill" data-id="${b.id}">ดูบิล</button>${b.status !== 'paid' ? `<button class="btn sm primary" data-act="pay" data-id="${b.id}">รับชำระ</button>` : ''}</div></td></tr>`).join('')}
+  </tbody></table></div>` : `<div class="panel empty">${all.length ? 'ไม่มีบิลในตัวกรองนี้' : 'ยังไม่ได้ออกบิลของเดือนนี้ ไปที่หน้าจดมิเตอร์เพื่อจดเลขแล้วกดออกบิล'}</div>`}`;
+}
+function billText(b) {
+  const st = settings();
+  return `${st.dormName}\nบิลค่าเช่าห้อง ${b.roomNo} · ${monthLabel(b.month)}\nเลขที่ ${b.no}\n\n` +
+    (b.items || []).map(i => `${i.label}  ${baht(i.amount)} บาท`).join('\n') +
+    `\n\nรวมทั้งสิ้น ${baht(billTotal(b))} บาท\nกรุณาชำระภายใน ${dateLabel(b.dueDate)}` + (st.promptpay ? `\nพร้อมเพย์ ${st.promptpay}` : '');
+}
+function billModal(id) {
+  const b = {id, ...S.bills[id]}; if (!S.bills[id]) return;
+  const editable = b.status !== 'paid';
+  modal(`<header><div><h2>บิลห้อง ${esc(b.roomNo)} · ${monthLabel(b.month)}</h2><div class="small muted">${esc(b.tenantName)} · เลขที่ ${esc(b.no)}</div></div><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  <div class="row">${billPill(b)}<span class="small muted">ครบกำหนด ${dateLabel(b.dueDate)}</span></div>
+  <table class="bill-items"><tbody>${(b.items || []).map((i, k) => `<tr><td>${esc(i.label)}</td><td class="num">${baht(i.amount)}${editable && k > 2 ? ` <button class="btn sm" data-act="itemDel" data-id="${id}" data-k="${k}" aria-label="ลบรายการ">×</button>` : ''}</td></tr>`).join('')}</tbody></table>
+  <div class="bill-total"><span>รวมทั้งสิ้น</span><span class="num">${baht(billTotal(b))} บาท</span></div>
+  ${editable ? `<form class="f" id="itemF" style="grid-template-columns:2fr 1fr auto;align-items:end"><div class="fld"><label for="it-l">เพิ่มรายการอื่น</label><input id="it-l" name="label" placeholder="เช่น ค่าปรับจ่ายช้า"></div><div class="fld"><label for="it-a">จำนวนเงิน</label><input id="it-a" name="amount" type="number" step="any"></div><button class="btn" type="button" data-act="itemAdd" data-id="${id}">เพิ่ม</button></form>` :
+    `<div class="banner info" style="margin:0"><span>รับชำระแล้ว ${dateLabel(b.paidAt)} · ${esc(b.method)} · ใบเสร็จเลขที่ ${esc(b.receiptNo)}</span></div>`}
+  <div><div class="small muted" style="margin-bottom:6px">ข้อความสำหรับส่งให้ผู้เช่า (เช่น ทาง LINE)</div><pre class="copy" id="billTxt">${esc(billText(b))}</pre></div>
+  <div class="actions">${editable ? `<button class="btn danger" data-act="billDelete" data-id="${id}" data-confirm="1">ลบบิล</button>` : `<button class="btn danger" data-act="unpay" data-id="${id}" data-confirm="1">ยกเลิกการรับชำระ</button>`}
+  <button class="btn" data-act="copyBill">คัดลอกข้อความ</button>${editable ? `<button class="btn primary" data-act="pay" data-id="${id}">รับชำระ</button>` : ''}</div>`);
+}
+function payForm(id) {
+  const b = S.bills[id];
+  modal(`<header><div><h2>รับชำระ · ห้อง ${esc(b.roomNo)}</h2><div class="small muted">${esc(b.tenantName)} · ${monthLabel(b.month)}</div></div><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  <div class="bill-total"><span>ยอดที่ต้องชำระ</span><span class="num">${baht(billTotal(b))} บาท</span></div>
+  <form class="f" id="payF">
+    <div class="fld"><label for="pf-date">วันที่รับเงิน</label><input id="pf-date" name="paidAt" type="date" required value="${todayStr()}"></div>
+    <div class="fld"><label for="pf-m">ช่องทาง</label><select id="pf-m" name="method"><option>โอน/พร้อมเพย์</option><option>เงินสด</option><option>อื่นๆ</option></select></div>
+    <div class="fld wide"><label for="pf-note">หมายเหตุ</label><input id="pf-note" name="payNote" placeholder="เช่น แนบสลิปทาง LINE แล้ว"></div>
+  </form>
+  <div class="actions"><button class="btn" data-act="close">ยกเลิก</button><button class="btn primary" data-act="paySave" data-id="${id}">บันทึกรับชำระ</button></div>`);
+}
+async function paySave(id) {
+  const f = $('#payF'); if (!f.reportValidity()) return;
+  const d = Object.fromEntries(new FormData(f)), b = S.bills[id];
+  const receiptNo = 'RC' + d.paidAt.replace(/-/g, '').slice(2) + '-' + b.roomNo;
+  closeModal();
+  if (await put('bills', id, {...b, status: 'paid', paidAt: d.paidAt, method: d.method, payNote: d.payNote.trim(), paidAmount: billTotal(b), receiptNo})) toast(`รับชำระห้อง ${b.roomNo} แล้ว ใบเสร็จ ${receiptNo}`);
+}
+
+/* ---------- repairs ---------- */
+function viewRepairs() {
+  const all = withId('repairs').sort((a, b) => (b.reportedAt || '').localeCompare(a.reportedAt || ''));
+  const col = (k, t, pill) => { const xs = all.filter(r => r.status === k); return `<div class="col"><h3>${t} <span class="num muted">${xs.length}</span></h3>${xs.length ? xs.slice(0, k === 'done' ? 12 : 99).map(r => `<div class="card"><div class="top"><div><h3>${esc(r.title)}</h3><div class="small muted">แจ้ง ${dateLabel(r.reportedAt)}${r.reporter ? ' · โดย ' + esc(r.reporter) : ''}</div></div>${tag(roomById(r.roomId)?.no || 'ส่วนกลาง')}</div>
+    ${r.detail ? `<div class="small">${esc(r.detail)}</div>` : ''}${k === 'done' ? `<div class="small muted">เสร็จ ${dateLabel(r.doneAt)}${r.cost ? ' · ค่าใช้จ่าย ' + baht(r.cost) + ' บาท' : ''}</div>` : ''}
+    <div class="row">${k === 'new' ? `<button class="btn sm" data-act="repairStep" data-id="${r.id}" data-to="doing">เริ่มซ่อม</button>` : ''}${k !== 'done' ? `<button class="btn sm" data-act="repairDone" data-id="${r.id}">ซ่อมเสร็จ</button>` : ''}<button class="btn sm" data-act="repairForm" data-id="${r.id}">แก้ไข</button></div></div>`).join('') : '<div class="empty">ไม่มีรายการ</div>'}</div>`; };
+  return `<div class="head"><div><h2>แจ้งซ่อม</h2><p>ค้างอยู่ ${all.filter(r => r.status !== 'done').length} งาน</p></div><button class="btn primary" data-act="repairForm">บันทึกแจ้งซ่อม</button></div>
+  <div class="cols3">${col('new', 'รอดำเนินการ')}${col('doing', 'กำลังซ่อม')}${col('done', 'เสร็จแล้ว')}</div>`;
+}
+function repairForm(id, roomId) {
+  const r = id ? S.repairs[id] : {roomId: roomId || '', title: '', detail: '', reporter: '', reportedAt: todayStr(), status: 'new'};
+  modal(`<header><h2>${id ? 'แก้ไขงานซ่อม' : 'บันทึกแจ้งซ่อม'}</h2><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  <form class="f" id="repF">
+    <div class="fld"><label for="rp-room">ห้อง</label><select id="rp-room" name="roomId"><option value="">ส่วนกลาง</option>${rooms().map(x => `<option value="${x.id}" ${x.id === r.roomId ? 'selected' : ''}>${esc(x.no)}</option>`).join('')}</select></div>
+    <div class="fld"><label for="rp-date">วันที่แจ้ง</label><input id="rp-date" name="reportedAt" type="date" value="${esc(r.reportedAt)}"></div>
+    <div class="fld wide"><label for="rp-title">ปัญหา</label><input id="rp-title" name="title" required value="${esc(r.title)}" placeholder="เช่น แอร์ไม่เย็น, ก๊อกน้ำรั่ว"></div>
+    <div class="fld wide"><label for="rp-detail">รายละเอียด</label><textarea id="rp-detail" name="detail" rows="3">${esc(r.detail)}</textarea></div>
+    <div class="fld"><label for="rp-who">ผู้แจ้ง</label><input id="rp-who" name="reporter" value="${esc(r.reporter)}"></div>
+    ${id ? `<div class="fld"><label for="rp-cost">ค่าใช้จ่าย (บาท)</label><input id="rp-cost" name="cost" type="number" min="0" value="${esc(r.cost || '')}"></div>` : ''}
+  </form>
+  <div class="actions">${id ? `<button class="btn danger" data-act="repairDelete" data-id="${id}" data-confirm="1">ลบ</button>` : ''}<button class="btn" data-act="close">ยกเลิก</button><button class="btn primary" data-act="repairSave" data-id="${id || ''}">บันทึก</button></div>`);
+}
+async function repairSave(id) {
+  const f = $('#repF'); if (!f.reportValidity()) return;
+  const d = Object.fromEntries(new FormData(f)), old = id ? S.repairs[id] : {status: 'new'};
+  const data = {...old, roomId: d.roomId, reportedAt: d.reportedAt || todayStr(), title: d.title.trim(), detail: d.detail.trim(), reporter: d.reporter.trim()};
+  if ('cost' in d) data.cost = +d.cost || 0;
+  closeModal(); if (await put('repairs', id || 'm' + uid(), data)) toast('บันทึกงานซ่อมแล้ว');
+}
+function repairDoneForm(id) {
+  const r = S.repairs[id];
+  modal(`<header><h2>ซ่อมเสร็จ · ${esc(r.title)}</h2><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  <form class="f" id="rdF"><div class="fld"><label for="rd-date">วันที่ซ่อมเสร็จ</label><input id="rd-date" name="doneAt" type="date" value="${todayStr()}"></div>
+  <div class="fld"><label for="rd-cost">ค่าใช้จ่าย (บาท)</label><input id="rd-cost" name="cost" type="number" min="0" value="${esc(r.cost || '')}"></div></form>
+  <div class="actions"><button class="btn" data-act="close">ยกเลิก</button><button class="btn primary" data-act="repairDoneSave" data-id="${id}">บันทึก</button></div>`);
+}
+
+/* ---------- room info (from map) ---------- */
+function roomInfo(id) {
+  const r = roomById(id), t = tenantOf(id), b = billOf(id, ui.month);
+  const reps = withId('repairs').filter(x => x.roomId === id && x.status !== 'done');
+  const st = roomState(r);
+  modal(`<header><div><h2>ห้อง ${esc(r.no)}</h2><div class="small muted">ชั้น ${esc(r.floor)} · ${esc(r.type || '')} · ${baht(r.rent)} บาท/เดือน</div></div><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  ${t ? `<dl class="kv"><dt>ผู้เช่า</dt><dd>${esc(t.name)}</dd><dt>เบอร์โทร</dt><dd>${esc(t.phone || '-')}</dd><dt>สิ้นสุดสัญญา</dt><dd>${dateLabel(t.contractEnd)}</dd>
+    <dt>บิล${monthLabel(ui.month, true)}</dt><dd>${b ? `${baht(billTotal(b))} บาท ${billPill(b)}` : 'ยังไม่ออกบิล'}</dd></dl>` : `<p class="muted" style="margin:0">${st === 'fix' ? 'ห้องปิดซ่อม' : 'ห้องว่าง'}</p>`}
+  ${reps.length ? `<div><h3>งานซ่อมค้าง</h3><div class="list">${reps.map(x => `<div class="li"><div class="grow">${esc(x.title)}</div><span class="pill ${x.status === 'doing' ? 'p-fix' : 'p-warn'}">${x.status === 'doing' ? 'กำลังซ่อม' : 'รอดำเนินการ'}</span></div>`).join('')}</div></div>` : ''}
+  <div class="actions">
+    <button class="btn" data-act="repairForm" data-room="${id}">แจ้งซ่อมห้องนี้</button>
+    ${b ? `<button class="btn" data-act="bill" data-id="${b.id}">ดูบิล</button>` : ''}
+    ${t ? `<button class="btn" data-act="tenantForm" data-id="${t.id}">ข้อมูลผู้เช่า</button>` : st === 'vacant' ? `<button class="btn primary" data-act="tenantForm" data-room="${id}">ทำสัญญาผู้เช่าใหม่</button>` : ''}
+    <button class="btn" data-act="roomForm" data-id="${id}">แก้ไขห้อง</button>
+  </div>`);
+}
+
+/* ---------- settings ---------- */
+function viewSettings() {
+  const st = settings();
+  return `<div class="head"><div><h2>ตั้งค่า</h2><p>เรทค่าน้ำไฟและค่าใช้จ่ายที่จะใส่ในบิลทุกเดือน</p></div></div>
+  <div class="panel"><form class="f" id="setF">
+    <div class="fld wide"><label for="st-name">ชื่อหอพัก</label><input id="st-name" name="dormName" value="${esc(st.dormName)}"></div>
+    <div class="fld"><label for="st-wr">ค่าน้ำต่อหน่วย (บาท)</label><input id="st-wr" name="waterRate" type="number" step="any" min="0" value="${esc(st.waterRate)}"></div>
+    <div class="fld"><label for="st-wm">ค่าน้ำขั้นต่ำต่อเดือน (บาท)</label><input id="st-wm" name="waterMin" type="number" step="any" min="0" value="${esc(st.waterMin)}"><span class="hint">ใส่ 0 ถ้าไม่มีขั้นต่ำ</span></div>
+    <div class="fld"><label for="st-er">ค่าไฟต่อหน่วย (บาท)</label><input id="st-er" name="elecRate" type="number" step="any" min="0" value="${esc(st.elecRate)}"></div>
+    <div class="fld"><label for="st-cf">ค่าส่วนกลางต่อเดือน (บาท)</label><input id="st-cf" name="commonFee" type="number" min="0" value="${esc(st.commonFee)}"></div>
+    <div class="fld"><label for="st-if">ค่าอินเทอร์เน็ตต่อเดือน (บาท)</label><input id="st-if" name="internetFee" type="number" min="0" value="${esc(st.internetFee)}"></div>
+    <div class="fld"><label for="st-dd">วันครบกำหนดชำระ (วันที่ของเดือนถัดไป)</label><input id="st-dd" name="dueDay" type="number" min="1" max="28" value="${esc(st.dueDay)}"></div>
+    <div class="fld"><label for="st-pp">เบอร์พร้อมเพย์ (แสดงในบิล)</label><input id="st-pp" name="promptpay" value="${esc(st.promptpay)}"></div>
+  </form><div class="actions" style="margin-top:14px"><button class="btn primary" data-act="saveSettings">บันทึกการตั้งค่า</button></div></div>
+  <div class="panel" style="margin-top:14px"><h3>ข้อมูลในระบบ</h3>
+    <p class="small muted" style="margin-top:0">ห้อง ${Object.keys(S.rooms).length} · ผู้เช่า ${Object.keys(S.tenants).length} · การจดมิเตอร์ ${Object.keys(S.readings).length} · บิล ${Object.keys(S.bills).length} · งานซ่อม ${Object.keys(S.repairs).length}</p>
+    <div class="row"><button class="btn" data-act="copyBackup">คัดลอกข้อมูลสำรอง (JSON)</button>${st.sample ? '<button class="btn danger" data-act="clearSample" data-confirm="1">ล้างข้อมูลตัวอย่าง</button>' : ''}</div>
+  </div>`;
+}
+async function saveSettings() {
+  const d = Object.fromEntries(new FormData($('#setF')));
+  const data = {...(S.settings.main || {}), dormName: d.dormName.trim() || DEFAULTS.dormName, waterRate: +d.waterRate || 0, waterMin: +d.waterMin || 0, elecRate: +d.elecRate || 0,
+    commonFee: +d.commonFee || 0, internetFee: +d.internetFee || 0, dueDay: Math.min(28, Math.max(1, +d.dueDay || 5)), promptpay: d.promptpay.trim()};
+  if (await put('settings', 'main', data)) toast('บันทึกการตั้งค่าแล้ว ใช้กับบิลที่ออกใหม่');
+}
+async function clearSample() {
+  let n = 0;
+  for (const col of ['bills', 'readings', 'repairs', 'tenants', 'rooms']) for (const [id, v] of Object.entries(S[col])) if (v.sample) { await remove(col, id); n++; }
+  await put('settings', 'main', {...(S.settings.main || {}), sample: false});
+  toast(`ล้างข้อมูลตัวอย่าง ${n} รายการแล้ว เริ่มเพิ่มห้องจริงได้เลย`);
+  ui.view = 'rooms'; render();
+}
+
+/* ---------- modal / toast ---------- */
+let lastFocus = null;
+function modal(html, mount) { lastFocus = document.activeElement; const box = $('#modalBox'); box.innerHTML = html; $('#modal').hidden = false; mount && mount(box); const f = box.querySelector('input:not([type=hidden]),select,textarea,button.primary'); f && f.focus(); }
+function closeModal() { $('#modal').hidden = true; $('#modalBox').innerHTML = ''; if (lastFocus && document.contains(lastFocus)) lastFocus.focus(); }
+let tt; function toast(t) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(tt); tt = setTimeout(() => el.hidden = true, 3200); }
+async function copy(text) { try { await navigator.clipboard.writeText(text); toast('คัดลอกแล้ว'); } catch (e) { toast('คัดลอกอัตโนมัติไม่ได้ เลือกข้อความแล้วคัดลอกเองได้'); } }
+
+/* ---------- events ---------- */
+document.addEventListener('click', async ev => {
+  if (ev.target === $('#modal')) { closeModal(); return; }
+  const el = ev.target.closest('[data-act]'); if (!el || el.disabled) return;
+  if (el.dataset.confirm && !el.dataset.armed) { el.dataset.armed = '1'; el.dataset.orig = el.textContent; el.textContent = 'กดอีกครั้งเพื่อยืนยัน'; setTimeout(() => { if (document.contains(el)) { delete el.dataset.armed; el.textContent = el.dataset.orig; } }, 3500); return; }
+  const {act, id} = el.dataset;
+  switch (act) {
+    case 'go': ui.view = el.dataset.v; try { history.replaceState(null, '', '#' + ui.view); } catch (e) {} closeModal(); render(); window.scrollTo(0, 0); break;
+    case 'month': ui.month = el.dataset.to || addMonths(ui.month, +el.dataset.k); render(); break;
+    case 'close': closeModal(); break;
+    case 'roomForm': roomForm(id); break;
+    case 'roomSave': roomSave(id); break;
+    case 'roomDelete': closeModal(); if (await remove('rooms', id)) toast('ลบห้องแล้ว'); break;
+    case 'roomInfo': roomInfo(id); break;
+    case 'tFilter': ui.tenantFilter = el.dataset.f; render(); break;
+    case 'tenantForm': tenantForm(id, el.dataset.room); break;
+    case 'tenantSave': tenantSave(id); break;
+    case 'tenantDelete': closeModal(); if (await remove('tenants', id)) toast('ลบประวัติผู้เช่าแล้ว'); break;
+    case 'moveOut': moveOutForm(id); break;
+    case 'moveOutSave': moveOutSave(id); break;
+    case 'genBills': el.disabled = true; await genBills(); break;
+    case 'bFilter': ui.billFilter = el.dataset.f; render(); break;
+    case 'bill': billModal(id); break;
+    case 'pay': payForm(id); break;
+    case 'paySave': paySave(id); break;
+    case 'unpay': { const b = {...S.bills[id]}; ['paidAt', 'method', 'payNote', 'paidAmount', 'receiptNo'].forEach(k => delete b[k]); b.status = 'unpaid'; await put('bills', id, b); billModal(id); break; }
+    case 'billDelete': closeModal(); if (await remove('bills', id)) toast('ลบบิลแล้ว แก้เลขมิเตอร์แล้วออกบิลใหม่ได้'); break;
+    case 'itemAdd': { const l = $('#it-l').value.trim(), a = +$('#it-a').value; if (!l || !a) { toast('ใส่ชื่อรายการและจำนวนเงิน'); return; } const b = {...S.bills[id], items: [...S.bills[id].items, {label: l, amount: a}]}; b.total = billTotal(b); await put('bills', id, b); billModal(id); break; }
+    case 'itemDel': { const items = S.bills[id].items.filter((_, k) => k !== +el.dataset.k); const b = {...S.bills[id], items}; b.total = billTotal(b); await put('bills', id, b); billModal(id); break; }
+    case 'copyBill': copy($('#billTxt').textContent); break;
+    case 'repairForm': repairForm(id, el.dataset.room); break;
+    case 'repairSave': repairSave(id); break;
+    case 'repairStep': await put('repairs', id, {...S.repairs[id], status: el.dataset.to}); break;
+    case 'repairDone': repairDoneForm(id); break;
+    case 'repairDoneSave': { const d = Object.fromEntries(new FormData($('#rdF'))); closeModal(); await put('repairs', id, {...S.repairs[id], status: 'done', doneAt: d.doneAt || todayStr(), cost: +d.cost || 0}); toast('ปิดงานซ่อมแล้ว'); break; }
+    case 'repairDelete': closeModal(); await remove('repairs', id); break;
+    case 'saveSettings': saveSettings(); break;
+    case 'copyBackup': copy(JSON.stringify(S, null, 1)); break;
+    case 'clearSample': closeModal(); clearSample(); break;
+  }
+});
+document.addEventListener('change', ev => { const tr = ev.target.closest && ev.target.closest('tr[data-room]'); if (tr && ev.target.dataset.meter) saveMeterRow(tr); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('#modal').hidden) closeModal(); });
+document.addEventListener('submit', ev => ev.preventDefault());
+
+const VIEW_FN = {dashboard: viewDashboard, rooms: viewRooms, tenants: viewTenants, meters: viewMeters, bills: viewBills, repairs: viewRepairs, settings: viewSettings};
+
+/* ---------- boot ---------- */
+async function boot() {
+  render();
+  const c = window.claude;
+  if (c && typeof c.use === 'function') { try { db = await c.use('db'); } catch (e) { db = null; } }
+  if (db) {
+    mode = 'db'; subscribe();
+    try { const u = await c.use('user'); if (u) { const w = await u.can('data.write'); if (w === false) readOnly = true; } } catch (e) {}
+  } else { mode = 'local'; loadLocal(); }
+  render();
+}
+boot();
+})();
+</script>
+
+</body></html>
