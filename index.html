@@ -153,6 +153,7 @@ form.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px)
 .fld input,.fld select,.fld textarea{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);width:100%}
 .fld .hint{font-size:.75rem;color:var(--muted)}
 .check{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.fld .check{color:var(--ink);white-space:nowrap}.fld .check input{width:auto;padding:0}
 .modal{position:fixed;inset:0;background:rgba(10,18,15,.45);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px;z-index:50;overflow-y:auto}
 .modal .box{background:var(--surface);border-radius:14px;width:100%;max-width:620px;padding:20px;margin-top:4vh;box-shadow:0 20px 50px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:14px}
 .modal .box > header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
@@ -208,8 +209,19 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 /* ---------- data ---------- */
 const COLS = ['rooms', 'tenants', 'readings', 'bills', 'repairs', 'settings'];
 const S = {}; COLS.forEach(c => S[c] = {});
-const DEFAULTS = {dormName: 'หอพักเต็มสมบัติ', waterRate: 18, waterMin: 0, elecRate: 8, commonFee: 0, internetFee: 0, dueDay: 5, promptpay: '', sample: false};
-const settings = () => { const st = {...DEFAULTS, ...(S.settings.main || {})}; if (!st.dormName || st.dormName === 'หอพักของฉัน') st.dormName = DEFAULTS.dormName; return st; };
+const DEFAULTS = {dormName: 'หอพักเต็มสมบัติ', waterRate: 15, waterMin: 0, elecRate: 7, commonFee: 0, internetFee: 0, dueDay: 5, promptpay: '', sample: false,
+  defaultRent: 3800, fridgeFee: 200, hotWaterFee: 200, wifiFee: 100};
+const ADDONS = [{key: 'fridge', label: 'ตู้เย็น', fee: 'fridgeFee'}, {key: 'hotWater', label: 'น้ำอุ่น', fee: 'hotWaterFee'}, {key: 'wifi', label: 'Wi-Fi', fee: 'wifiFee', bill: 'ค่า Wi-Fi'}];
+const DEFAULT_ROOM_NOS = '101-108, 201-208';
+const settings = () => {
+  const st = {...DEFAULTS, ...(S.settings.main || {})};
+  if (!st.dormName || st.dormName === 'หอพักของฉัน') st.dormName = DEFAULTS.dormName;
+  if (!st.ratesV2) { if (+st.waterRate === 18) st.waterRate = DEFAULTS.waterRate; if (+st.elecRate === 8) st.elecRate = DEFAULTS.elecRate; }
+  return st;
+};
+const roomAddons = r => ADDONS.filter(a => r.addons?.[a.key]);
+const addonText = r => roomAddons(r).map(a => a.label).join(', ');
+const roomMonthly = (r, st = settings()) => (+r.rent || 0) + roomAddons(r).reduce((s, a) => s + (+st[a.fee] || 0), 0);
 let mode = 'loading', sb = null, userEmail = '', readOnly = false;
 const CFG = window.DORM_CONFIG || {};
 const LS_KEY = 'dorm-manager-v1';
@@ -356,7 +368,7 @@ function viewDashboard() {
   const useData = hist.map(h => { let w = 0, e = 0; rs.forEach(r => { const u = usage(r, h); if (u) { w += Math.max(0, u.w); e += Math.max(0, u.e); } }); return {label: monthLabel(h, true), v: [w, e]}; });
 
   if (!rs.length) return `<div class="head"><div><h2>ภาพรวม</h2><p>เริ่มจากเพิ่มห้องพักก่อน แล้วตัวเลขจะขึ้นที่หน้านี้</p></div></div>
-    <div class="panel"><p>ยังไม่มีห้องพักในระบบ</p><div class="row"><button class="btn primary" data-act="roomForm">เพิ่มห้องแรก</button><button class="btn" data-act="go" data-v="settings">ตั้งค่าเรทน้ำไฟ</button></div></div>`;
+    <div class="panel"><p>ยังไม่มีห้องพักในระบบ</p><div class="row"><button class="btn primary" data-act="bulkForm">สร้าง 16 ห้องทีเดียว</button><button class="btn" data-act="roomForm">เพิ่มทีละห้อง</button><button class="btn" data-act="go" data-v="settings">ตั้งค่าเรทน้ำไฟ</button></div></div>`;
 
   const li = (left, mid, right, act = '') => `<div class="li" ${act}>${left}<div class="grow">${mid}</div>${right}</div>`;
   const more = (arr, n) => arr.length > n ? `<div class="small muted" style="padding-top:6px">และอีก ${arr.length - n} รายการ</div>` : '';
@@ -428,15 +440,16 @@ function roomMap(m) {
 
 /* ---------- rooms ---------- */
 function viewRooms() {
-  const rs = rooms();
+  const rs = rooms(), st = settings();
   const label = {occ: '<span class="pill p-ok">มีผู้เช่า</span>', vacant: '<span class="pill p-idle">ว่าง</span>', fix: '<span class="pill p-fix">ปิดซ่อม</span>'};
-  return `<div class="head"><div><h2>ห้องพัก</h2><p>${rs.length} ห้อง · ว่าง ${rs.filter(r => roomState(r) === 'vacant').length} ห้อง</p></div><button class="btn primary" data-act="roomForm">เพิ่มห้อง</button></div>
-  ${rs.length ? `<div class="tablewrap"><table><thead><tr><th>ห้อง</th><th>ชั้น</th><th>ประเภท</th><th class="r">ค่าเช่า/เดือน</th><th>สถานะ</th><th>ผู้เช่า</th><th></th></tr></thead><tbody>
-  ${rs.map(r => `<tr><td>${tag(r.no)}</td><td>${esc(r.floor)}</td><td>${esc(r.type || '-')}</td><td class="r num">${baht(r.rent)}</td><td>${label[roomState(r)]}</td><td>${esc(tenantOf(r.id)?.name || '-')}</td><td class="r"><button class="btn sm" data-act="roomForm" data-id="${r.id}">แก้ไข</button></td></tr>`).join('')}
-  </tbody></table></div>` : '<div class="panel empty">ยังไม่มีห้องพัก กด "เพิ่มห้อง" เพื่อเริ่ม</div>'}`;
+  return `<div class="head"><div><h2>ห้องพัก</h2><p>${rs.length} ห้อง · ว่าง ${rs.filter(r => roomState(r) === 'vacant').length} ห้อง</p></div><div class="row">${rs.length < 16 ? '<button class="btn" data-act="bulkForm">สร้างหลายห้องทีเดียว</button>' : ''}<button class="btn primary" data-act="roomForm">เพิ่มห้อง</button></div></div>
+  ${rs.length ? `<div class="tablewrap"><table><thead><tr><th>ห้อง</th><th>ชั้น</th><th>ประเภท</th><th class="r">ค่าเช่า/เดือน</th><th>ส่วนเสริม</th><th class="r">รวม/เดือน</th><th>สถานะ</th><th>ผู้เช่า</th><th></th></tr></thead><tbody>
+  ${rs.map(r => `<tr><td>${tag(r.no)}</td><td>${esc(r.floor)}</td><td>${esc(r.type || '-')}</td><td class="r num">${baht(r.rent)}</td><td>${esc(addonText(r) || '-')}</td><td class="r num">${baht(roomMonthly(r, st))}</td><td>${label[roomState(r)]}</td><td>${esc(tenantOf(r.id)?.name || '-')}</td><td class="r"><button class="btn sm" data-act="roomForm" data-id="${r.id}">แก้ไข</button></td></tr>`).join('')}
+  </tbody></table></div>` : '<div class="panel empty">ยังไม่มีห้องพัก กด "สร้างหลายห้องทีเดียว" เพื่อสร้าง 16 ห้องในครั้งเดียว</div>'}`;
 }
 function roomForm(id) {
-  const r = id ? roomById(id) : {no: '', floor: '', type: 'ห้องพัดลม', rent: 3500, startWater: 0, startElec: 0, maintenance: false, note: ''};
+  const st = settings();
+  const r = id ? roomById(id) : {no: '', floor: '', type: '', rent: st.defaultRent, startWater: 0, startElec: 0, maintenance: false, note: '', addons: {}};
   const occupied = id && tenantOf(id);
   modal(`<header><h2>${id ? 'แก้ไขห้อง ' + esc(r.no) : 'เพิ่มห้องพัก'}</h2><button class="x" data-act="close" aria-label="ปิด">×</button></header>
   <form class="f" id="roomF">
@@ -446,6 +459,7 @@ function roomForm(id) {
     <div class="fld"><label for="rf-rent">ค่าเช่าต่อเดือน (บาท)</label><input id="rf-rent" name="rent" type="number" min="0" step="1" required value="${esc(r.rent)}"></div>
     <div class="fld"><label for="rf-sw">เลขมิเตอร์น้ำเริ่มต้น</label><input id="rf-sw" name="startWater" type="number" min="0" step="any" value="${esc(r.startWater)}"><span class="hint">ใช้เป็นค่าก่อนหน้าของการจดครั้งแรก</span></div>
     <div class="fld"><label for="rf-se">เลขมิเตอร์ไฟเริ่มต้น</label><input id="rf-se" name="startElec" type="number" min="0" step="any" value="${esc(r.startElec)}"></div>
+    <div class="fld wide"><label>ส่วนเสริมของห้องนี้ (บวกในบิลทุกเดือน)</label><div class="row">${addonChecks(r.addons || {}, 'rf')}</div></div>
     <div class="fld wide"><label class="check"><input type="checkbox" id="rf-fix" name="maintenance" ${r.maintenance ? 'checked' : ''}> ปิดห้องเพื่อซ่อมแซม (ไม่รับผู้เช่า)</label></div>
     <div class="fld wide"><label for="rf-note">หมายเหตุ</label><input id="rf-note" name="note" value="${esc(r.note)}"></div>
   </form>
@@ -457,8 +471,43 @@ async function roomSave(id) {
   const no = d.no.trim();
   if (rooms().some(r => r.no === no && r.id !== id)) { toast('มีห้อง ' + no + ' อยู่แล้ว'); return; }
   const old = id ? S.rooms[id] : {};
-  const data = {...old, no, floor: d.floor.trim() || no.charAt(0), type: d.type.trim(), rent: +d.rent || 0, startWater: +d.startWater || 0, startElec: +d.startElec || 0, maintenance: !!d.maintenance, note: d.note.trim()};
+  const data = {...old, no, floor: d.floor.trim() || no.charAt(0), type: d.type.trim(), rent: +d.rent || 0, startWater: +d.startWater || 0, startElec: +d.startElec || 0, maintenance: !!d.maintenance, note: d.note.trim(), addons: addonsFrom(d)};
   closeModal(); if (await put('rooms', id || 'r' + uid(), data)) toast('บันทึกห้อง ' + no + ' แล้ว');
+}
+
+const addonChecks = (sel, pre) => { const st = settings(); return ADDONS.map(a => `<label class="check"><input type="checkbox" id="${pre}-${a.key}" name="addon_${a.key}" ${sel[a.key] ? 'checked' : ''}> ${a.label} +${baht(st[a.fee])} บาท</label>`).join(''); };
+const addonsFrom = d => Object.fromEntries(ADDONS.map(a => [a.key, !!d['addon_' + a.key]]));
+function parseRoomNos(text) {
+  const out = [];
+  for (const part of String(text).split(/[,\s]+/).filter(Boolean)) {
+    const m = part.match(/^(\d+)-(\d+)$/);
+    if (m && +m[2] >= +m[1] && +m[2] - +m[1] < 200) { for (let n = +m[1]; n <= +m[2]; n++) out.push(String(n).padStart(m[1].length, '0')); }
+    else out.push(part);
+  }
+  return [...new Set(out)];
+}
+function bulkForm() {
+  const st = settings();
+  modal(`<header><h2>สร้างหลายห้องทีเดียว</h2><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  <form class="f" id="bulkF">
+    <div class="fld wide"><label for="bf-nos">เลขห้อง</label><input id="bf-nos" name="nos" required value="${esc(DEFAULT_ROOM_NOS)}"><span class="hint">ใส่เป็นช่วงหรือคั่นด้วยจุลภาค เช่น 101-108, 201-208 (ห้องที่มีอยู่แล้วจะข้ามไป)</span></div>
+    <div class="fld"><label for="bf-rent">ค่าเช่าต่อเดือน (บาท)</label><input id="bf-rent" name="rent" type="number" min="0" step="1" required value="${esc(st.defaultRent)}"></div>
+    <div class="fld wide"><label>ส่วนเสริมที่ทุกห้องมี (ปล่อยว่างได้ แล้วค่อยติ๊กทีละห้องในหน้าแก้ไขห้อง)</label><div class="row">${addonChecks({}, 'bf')}</div></div>
+  </form>
+  <p class="small muted" id="bf-count"></p>
+  <div class="actions"><button class="btn" data-act="close">ยกเลิก</button><button class="btn primary" data-act="bulkSave">สร้างห้อง</button></div>`);
+  const upd = () => { const nos = parseRoomNos($('#bf-nos').value), have = new Set(rooms().map(r => r.no)), n = nos.filter(x => !have.has(x)).length; $('#bf-count').textContent = `จะสร้างใหม่ ${n} ห้อง` + (nos.length > n ? ` (ข้าม ${nos.length - n} ห้องที่มีอยู่แล้ว)` : ''); };
+  $('#bf-nos').addEventListener('input', upd); upd();
+}
+async function bulkSave() {
+  const f = $('#bulkF'); if (!f.reportValidity()) return;
+  const d = Object.fromEntries(new FormData(f));
+  const have = new Set(rooms().map(r => r.no)), nos = parseRoomNos(d.nos).filter(x => !have.has(x));
+  if (!nos.length) { toast('ไม่มีห้องใหม่ให้สร้าง'); return; }
+  if (nos.length > 200) { toast('สร้างได้ครั้งละไม่เกิน 200 ห้อง'); return; }
+  const addons = addonsFrom(d); closeModal(); let n = 0;
+  for (const no of nos) if (await put('rooms', 'r' + uid(), {no, floor: no.charAt(0), type: '', rent: +d.rent || 0, startWater: 0, startElec: 0, maintenance: false, note: '', addons})) n++;
+  toast(`สร้างห้องแล้ว ${n} ห้อง แก้ไขเลขห้องหรือส่วนเสริมได้ทีละห้อง`);
 }
 
 /* ---------- tenants ---------- */
@@ -569,6 +618,7 @@ async function genBills() {
     const items = [{label: 'ค่าเช่าห้อง', amount: +r.rent || 0},
       {label: `ค่าน้ำ ${baht(u.w)} หน่วย × ${baht(st.waterRate)}`, amount: round2(Math.max(u.w * st.waterRate, +st.waterMin || 0))},
       {label: `ค่าไฟ ${baht(u.e)} หน่วย × ${baht(st.elecRate)}`, amount: round2(u.e * st.elecRate)}];
+    roomAddons(r).forEach(a => { if (+st[a.fee] > 0) items.push({label: a.bill || 'ค่า' + a.label, amount: +st[a.fee]}); });
     if (+st.commonFee > 0) items.push({label: 'ค่าส่วนกลาง', amount: +st.commonFee});
     if (+st.internetFee > 0) items.push({label: 'ค่าอินเทอร์เน็ต', amount: +st.internetFee});
     const bill = {roomId: r.id, roomNo: r.no, tenantId: t.id, tenantName: t.name, month: m, items, waterUnits: u.w, elecUnits: u.e,
@@ -674,7 +724,7 @@ function roomInfo(id) {
   const r = roomById(id), t = tenantOf(id), b = billOf(id, ui.month);
   const reps = withId('repairs').filter(x => x.roomId === id && x.status !== 'done');
   const st = roomState(r);
-  modal(`<header><div><h2>ห้อง ${esc(r.no)}</h2><div class="small muted">ชั้น ${esc(r.floor)} · ${esc(r.type || '')} · ${baht(r.rent)} บาท/เดือน</div></div><button class="x" data-act="close" aria-label="ปิด">×</button></header>
+  modal(`<header><div><h2>ห้อง ${esc(r.no)}</h2><div class="small muted">ชั้น ${esc(r.floor)}${r.type ? ' · ' + esc(r.type) : ''} · ค่าเช่า ${baht(r.rent)} บาท${roomAddons(r).length ? ' · ' + esc(addonText(r)) + ' · รวม ' + baht(roomMonthly(r)) + ' บาท' : ''}/เดือน</div></div><button class="x" data-act="close" aria-label="ปิด">×</button></header>
   ${t ? `<dl class="kv"><dt>ผู้เช่า</dt><dd>${esc(t.name)}</dd><dt>เบอร์โทร</dt><dd>${esc(t.phone || '-')}</dd><dt>สิ้นสุดสัญญา</dt><dd>${dateLabel(t.contractEnd)}</dd>
     <dt>บิล${monthLabel(ui.month, true)}</dt><dd>${b ? `${baht(billTotal(b))} บาท ${billPill(b)}` : 'ยังไม่ออกบิล'}</dd></dl>` : `<p class="muted" style="margin:0">${st === 'fix' ? 'ห้องปิดซ่อม' : 'ห้องว่าง'}</p>`}
   ${reps.length ? `<div><h3>งานซ่อมค้าง</h3><div class="list">${reps.map(x => `<div class="li"><div class="grow">${esc(x.title)}</div><span class="pill ${x.status === 'doing' ? 'p-fix' : 'p-warn'}">${x.status === 'doing' ? 'กำลังซ่อม' : 'รอดำเนินการ'}</span></div>`).join('')}</div></div>` : ''}
@@ -692,11 +742,15 @@ function viewSettings() {
   return `<div class="head"><div><h2>ตั้งค่า</h2><p>เรทค่าน้ำไฟและค่าใช้จ่ายที่จะใส่ในบิลทุกเดือน</p></div></div>
   <div class="panel"><form class="f" id="setF">
     <div class="fld wide"><label for="st-name">ชื่อหอพัก</label><input id="st-name" name="dormName" value="${esc(st.dormName)}"></div>
+    <div class="fld"><label for="st-rent">ค่าเช่าห้องเริ่มต้น (บาท)</label><input id="st-rent" name="defaultRent" type="number" min="0" value="${esc(st.defaultRent)}"><span class="hint">ใช้ตอนเพิ่มห้องใหม่ แต่ละห้องแก้ได้</span></div>
+    <div class="fld"><label for="st-ff">ตู้เย็น (บาท/เดือน)</label><input id="st-ff" name="fridgeFee" type="number" min="0" value="${esc(st.fridgeFee)}"></div>
+    <div class="fld"><label for="st-hf">น้ำอุ่น (บาท/เดือน)</label><input id="st-hf" name="hotWaterFee" type="number" min="0" value="${esc(st.hotWaterFee)}"></div>
+    <div class="fld"><label for="st-wf">Wi-Fi (บาท/เดือน)</label><input id="st-wf" name="wifiFee" type="number" min="0" value="${esc(st.wifiFee)}"><span class="hint">คิดเฉพาะห้องที่ติ๊กส่วนเสริมนี้</span></div>
     <div class="fld"><label for="st-wr">ค่าน้ำต่อหน่วย (บาท)</label><input id="st-wr" name="waterRate" type="number" step="any" min="0" value="${esc(st.waterRate)}"></div>
     <div class="fld"><label for="st-wm">ค่าน้ำขั้นต่ำต่อเดือน (บาท)</label><input id="st-wm" name="waterMin" type="number" step="any" min="0" value="${esc(st.waterMin)}"><span class="hint">ใส่ 0 ถ้าไม่มีขั้นต่ำ</span></div>
     <div class="fld"><label for="st-er">ค่าไฟต่อหน่วย (บาท)</label><input id="st-er" name="elecRate" type="number" step="any" min="0" value="${esc(st.elecRate)}"></div>
     <div class="fld"><label for="st-cf">ค่าส่วนกลางต่อเดือน (บาท)</label><input id="st-cf" name="commonFee" type="number" min="0" value="${esc(st.commonFee)}"></div>
-    <div class="fld"><label for="st-if">ค่าอินเทอร์เน็ตต่อเดือน (บาท)</label><input id="st-if" name="internetFee" type="number" min="0" value="${esc(st.internetFee)}"></div>
+    <div class="fld"><label for="st-if">ค่าอินเทอร์เน็ตทุกห้อง (บาท/เดือน)</label><input id="st-if" name="internetFee" type="number" min="0" value="${esc(st.internetFee)}"></div>
     <div class="fld"><label for="st-dd">วันครบกำหนดชำระ (วันที่ของเดือนถัดไป)</label><input id="st-dd" name="dueDay" type="number" min="1" max="28" value="${esc(st.dueDay)}"></div>
     <div class="fld"><label for="st-pp">เบอร์พร้อมเพย์ (แสดงในบิล)</label><input id="st-pp" name="promptpay" value="${esc(st.promptpay)}"></div>
   </form><div class="actions" style="margin-top:14px"><button class="btn primary" data-act="saveSettings">บันทึกการตั้งค่า</button></div></div>
@@ -709,7 +763,8 @@ function viewSettings() {
 async function saveSettings() {
   const d = Object.fromEntries(new FormData($('#setF')));
   const data = {...(S.settings.main || {}), dormName: d.dormName.trim() || DEFAULTS.dormName, waterRate: +d.waterRate || 0, waterMin: +d.waterMin || 0, elecRate: +d.elecRate || 0,
-    commonFee: +d.commonFee || 0, internetFee: +d.internetFee || 0, dueDay: Math.min(28, Math.max(1, +d.dueDay || 5)), promptpay: d.promptpay.trim()};
+    commonFee: +d.commonFee || 0, internetFee: +d.internetFee || 0, defaultRent: +d.defaultRent || 0,
+    fridgeFee: +d.fridgeFee || 0, hotWaterFee: +d.hotWaterFee || 0, wifiFee: +d.wifiFee || 0, ratesV2: true, dueDay: Math.min(28, Math.max(1, +d.dueDay || 5)), promptpay: d.promptpay.trim()};
   if (await put('settings', 'main', data)) toast('บันทึกการตั้งค่าแล้ว ใช้กับบิลที่ออกใหม่');
 }
 async function clearSample() {
@@ -741,6 +796,8 @@ document.addEventListener('click', async ev => {
     case 'roomSave': roomSave(id); break;
     case 'roomDelete': closeModal(); if (await remove('rooms', id)) toast('ลบห้องแล้ว'); break;
     case 'roomInfo': roomInfo(id); break;
+    case 'bulkForm': bulkForm(); break;
+    case 'bulkSave': el.disabled = true; await bulkSave(); break;
     case 'tFilter': ui.tenantFilter = el.dataset.f; render(); break;
     case 'tenantForm': tenantForm(id, el.dataset.room); break;
     case 'tenantSave': tenantSave(id); break;
@@ -842,7 +899,7 @@ async function exportExcel() {
   const rn = id => roomById(id)?.no || '';
   const stName = {occ: 'มีผู้เช่า', vacant: 'ว่าง', fix: 'ปิดซ่อม'};
   const sheets = {
-    'ห้องพัก': rooms().map(r => ({'ห้อง': r.no, 'ชั้น': r.floor, 'ประเภท': r.type, 'ค่าเช่า': +r.rent || 0, 'สถานะ': stName[roomState(r)], 'ผู้เช่า': tenantOf(r.id)?.name || ''})),
+    'ห้องพัก': rooms().map(r => ({'ห้อง': r.no, 'ชั้น': r.floor, 'ประเภท': r.type, 'ค่าเช่า': +r.rent || 0, 'ส่วนเสริม': addonText(r), 'รวม/เดือน': roomMonthly(r), 'สถานะ': stName[roomState(r)], 'ผู้เช่า': tenantOf(r.id)?.name || ''})),
     'ผู้เช่า': withId('tenants').map(t => ({'ชื่อ': t.name, 'ห้อง': rn(t.roomId), 'เบอร์โทร': t.phone, 'เลขบัตรประชาชน': t.idCard, 'ผู้ติดต่อฉุกเฉิน': [t.emergencyName, t.emergencyPhone].filter(Boolean).join(' '), 'วันเข้าพัก': t.moveIn, 'สิ้นสุดสัญญา': t.contractEnd, 'เงินประกัน': +t.deposit || 0, 'สถานะ': t.status === 'active' ? 'พักอยู่' : 'ย้ายออกแล้ว', 'วันย้ายออก': t.moveOut || '', 'คืนประกัน': t.refund ?? ''})),
     'บิล': withId('bills').sort((a, b) => (a.month + a.roomNo).localeCompare(b.month + b.roomNo, 'th', {numeric: true})).map(b => ({'เดือน': b.month, 'เลขที่บิล': b.no, 'ห้อง': b.roomNo, 'ผู้เช่า': b.tenantName, 'น้ำ (หน่วย)': b.waterUnits, 'ไฟ (หน่วย)': b.elecUnits, 'ยอดรวม': billTotal(b), 'ครบกำหนด': b.dueDate, 'สถานะ': BILL_PILL[billState(b)][1], 'วันที่จ่าย': b.paidAt || '', 'ช่องทาง': b.method || '', 'ใบเสร็จ': b.receiptNo || ''})),
     'มิเตอร์': Object.values(S.readings).sort((a, b) => (a.month + rn(a.roomId)).localeCompare(b.month + rn(b.roomId), 'th', {numeric: true})).map(r => ({'เดือน': r.month, 'ห้อง': rn(r.roomId), 'มิเตอร์น้ำ': r.water, 'มิเตอร์ไฟ': r.elec, 'วันที่จด': r.readAt})),
