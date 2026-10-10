@@ -169,6 +169,7 @@ pre.copy{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(-
 .login .panel{display:flex;flex-direction:column;gap:12px;padding:22px}
 .login .big{width:100%;justify-content:center;min-height:46px;font-size:1rem}
 .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem}
+.linkbtn{border:0;background:none;color:var(--accent);cursor:pointer;padding:4px 0;text-align:left;text-decoration:underline;text-underline-offset:3px}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 .app.locked .side nav,.app.locked .side-foot{display:none!important}
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
@@ -817,7 +818,11 @@ function viewSettings() {
     <div class="fld"><label for="st-dd">วันครบกำหนดชำระ (วันที่ของเดือนถัดไป)</label><input id="st-dd" name="dueDay" type="number" min="1" max="28" value="${esc(st.dueDay)}"></div>
     <div class="fld"><label for="st-pp">เบอร์พร้อมเพย์ (แสดงในบิล)</label><input id="st-pp" name="promptpay" value="${esc(st.promptpay)}"></div>
   </form><div class="actions" style="margin-top:14px"><button class="btn primary" data-act="saveSettings">บันทึกการตั้งค่า</button></div></div>
-  ${mode === 'cloud' ? `<div class="panel" style="margin-top:14px"><h3>บัญชีผู้ใช้</h3><div class="row" style="justify-content:space-between"><span>เข้าสู่ระบบด้วย <b>${esc(userEmail)}</b></span><button class="btn" data-act="signOut">ออกจากระบบ</button></div></div>` : ''}
+  ${mode === 'cloud' ? `<div class="panel" style="margin-top:14px"><h3>บัญชีผู้ใช้</h3><div class="row" style="justify-content:space-between"><span>เข้าสู่ระบบด้วย <b>${esc(userEmail)}</b></span><button class="btn" data-act="signOut">ออกจากระบบ</button></div>
+    <form class="f" id="pwF" style="margin-top:14px" onsubmit="return false"><input type="email" autocomplete="username" value="${esc(userEmail)}" hidden>
+      <div class="fld"><label for="pw-new">ตั้งรหัสผ่านใหม่</label><input id="pw-new" type="password" autocomplete="new-password" minlength="6"></div>
+      <div class="fld"><label for="pw-again">พิมพ์รหัสผ่านอีกครั้ง</label><input id="pw-again" type="password" autocomplete="new-password" minlength="6"></div>
+    </form><div class="actions" style="margin-top:10px"><button class="btn" data-act="changePassword">บันทึกรหัสผ่าน</button></div></div>` : ''}
   <div class="panel" style="margin-top:14px"><h3>ข้อมูลในระบบ</h3>
     <p class="small muted" style="margin-top:0">ห้อง ${Object.keys(S.rooms).length} · ผู้เช่า ${Object.keys(S.tenants).length} · การจดมิเตอร์ ${Object.keys(S.readings).length} · บิล ${Object.keys(S.bills).length} · งานซ่อม ${Object.keys(S.repairs).length}</p>
     <div class="row"><button class="btn primary" data-act="exportExcel">ส่งออกเป็น Excel</button><button class="btn" data-act="downloadBackup">ดาวน์โหลดไฟล์สำรอง</button><label class="btn" for="restoreFile">นำเข้าไฟล์สำรอง</label><input type="file" id="restoreFile" accept=".json,application/json" hidden><button class="btn" data-act="copyBackup">คัดลอกข้อมูลสำรอง (JSON)</button></div><p class="small muted">ไฟล์ Excel และไฟล์สำรองมีข้อมูลผู้เช่า เก็บไว้ในเครื่องตัวเอง อย่าอัปโหลดขึ้น GitHub</p><div>${st.sample ? '<button class="btn danger" data-act="clearSample" data-confirm="1">ล้างข้อมูลตัวอย่าง</button>' : ''}</div>
@@ -849,6 +854,7 @@ async function copy(text) { try { await navigator.clipboard.writeText(text); toa
 document.addEventListener('click', async ev => {
   if (ev.target === $('#modal')) { closeModal(); return; }
   const el = ev.target.closest('[data-act]'); if (!el || el.disabled) return;
+  if (el.type === 'submit') ev.preventDefault();
   if (el.dataset.confirm && !el.dataset.armed) { el.dataset.armed = '1'; el.dataset.orig = el.textContent; el.textContent = 'กดอีกครั้งเพื่อยืนยัน'; setTimeout(() => { if (document.contains(el)) { delete el.dataset.armed; el.textContent = el.dataset.orig; } }, 3500); return; }
   const {act, id} = el.dataset;
   switch (act) {
@@ -889,6 +895,8 @@ document.addEventListener('click', async ev => {
     case 'clearSample': closeModal(); clearSample(); break;
     case 'exportExcel': el.disabled = true; await exportExcel(); el.disabled = false; break;
     case 'loginEmail': el.disabled = true; await loginEmail(); el.disabled = false; break;
+    case 'loginPassword': ev.preventDefault(); el.disabled = true; await loginPassword(); if (document.contains(el)) el.disabled = false; break;
+    case 'changePassword': el.disabled = true; await changePassword(); el.disabled = false; break;
     case 'loginGoogle': await sb.auth.signInWithOAuth({provider: 'google', options: {redirectTo: redirectUrl()}}); break;
     case 'loginBack': loginSent = ''; render(); break;
     case 'signOut': await sb.auth.signOut(); break;
@@ -911,7 +919,7 @@ document.addEventListener('change', ev => {
   fr.readAsText(ev.target.files[0]);
 });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('#modal').hidden) closeModal(); });
-document.addEventListener('submit', ev => { ev.preventDefault(); if (ev.target.id === 'loginF') loginEmail(); });
+document.addEventListener('submit', ev => { ev.preventDefault(); if (ev.target.id === 'loginF') loginPassword(); });
 
 /* ---------- login ---------- */
 let loginSent = '';
@@ -925,10 +933,12 @@ function viewLogin() {
   <div class="panel">
     ${CFG.googleLogin ? `<button class="btn primary big" data-act="loginGoogle">เข้าสู่ระบบด้วย Google</button><div class="or">หรือ</div>` : ''}
     <form id="loginF" style="display:flex;flex-direction:column;gap:10px">
-      <div class="fld"><label for="lg-email">อีเมล</label><input id="lg-email" name="email" type="email" required autocomplete="email" inputmode="email" placeholder="name@gmail.com"></div>
-      <button class="btn ${CFG.googleLogin ? '' : 'primary'} big" data-act="loginEmail" type="button">ส่งลิงก์เข้าสู่ระบบทางอีเมล</button>
+      <div class="fld"><label for="lg-email">อีเมล</label><input id="lg-email" name="email" type="email" required autocomplete="username" inputmode="email" placeholder="name@gmail.com" value="${esc(lastEmail())}"></div>
+      <div class="fld"><label for="lg-pass">รหัสผ่าน</label><input id="lg-pass" name="password" type="password" required autocomplete="current-password"></div>
+      <button class="btn ${CFG.googleLogin ? '' : 'primary'} big" data-act="loginPassword" type="submit">เข้าสู่ระบบ</button>
     </form>
     <p class="small muted" style="margin:0">เข้าสู่ระบบครั้งเดียว เครื่องนี้จะจำไว้ ครั้งต่อไปเปิดมาใช้ได้เลย</p>
+    <button class="linkbtn small" data-act="loginEmail" type="button">ยังไม่มีรหัสหรือลืมรหัส? ส่งลิงก์เข้าสู่ระบบทางอีเมลแทน</button>
   </div></div>`;
 }
 function viewDenied() {
@@ -937,9 +947,26 @@ function viewDenied() {
   <button class="btn big" data-act="signOut">ออกจากระบบ แล้วใช้อีเมลอื่น</button></div></div>`;
 }
 const redirectUrl = () => location.origin + location.pathname;
-async function loginEmail() {
+const lastEmail = () => { try { return localStorage.getItem('dorm-last-email') || ''; } catch (e) { return ''; } };
+const rememberEmail = e => { try { localStorage.setItem('dorm-last-email', e); } catch (x) {} };
+async function loginPassword() {
   const f = $('#loginF'); if (!f.reportValidity()) return;
-  const email = $('#lg-email').value.trim();
+  const email = $('#lg-email').value.trim(), password = $('#lg-pass').value;
+  const {error} = await sb.auth.signInWithPassword({email, password});
+  if (error) { toast(/invalid|credentials/i.test(error.message) ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : /rate|seconds|many/i.test(error.message) ? 'ลองถี่เกินไป รอสักครู่แล้วลองใหม่' : 'เข้าสู่ระบบไม่สำเร็จ เช็กอินเทอร์เน็ตแล้วลองใหม่'); return; }
+  rememberEmail(email);
+}
+async function changePassword() {
+  const a = $('#pw-new').value, b = $('#pw-again').value;
+  if (a.length < 6) { toast('รหัสผ่านต้องยาวอย่างน้อย 6 ตัว'); return; }
+  if (a !== b) { toast('รหัสผ่านสองช่องไม่ตรงกัน'); return; }
+  const {error} = await sb.auth.updateUser({password: a});
+  if (error) { toast(/reauth|nonce/i.test(error.message) ? 'ต้องออกจากระบบแล้วเข้าใหม่ก่อน จึงจะเปลี่ยนรหัสได้' : 'เปลี่ยนรหัสไม่สำเร็จ ลองใหม่อีกครั้ง'); return; }
+  $('#pw-new').value = $('#pw-again').value = ''; toast('ตั้งรหัสผ่านแล้ว ครั้งหน้าเข้าสู่ระบบด้วยรหัสนี้ได้เลย');
+}
+async function loginEmail() {
+  const em = $('#lg-email'); if (!em.reportValidity()) return;
+  const email = em.value.trim(); rememberEmail(email);
   const {error} = await sb.auth.signInWithOtp({email, options: {emailRedirectTo: redirectUrl()}});
   if (error) { toast(/rate|seconds/i.test(error.message) ? 'ส่งถี่เกินไป รอประมาณ 1 นาทีแล้วลองใหม่' : 'ส่งลิงก์ไม่สำเร็จ ลองใหม่อีกครั้ง'); return; }
   loginSent = email; render();
