@@ -121,8 +121,10 @@ td input:disabled{background:var(--surface-2);color:var(--muted)}
 .floors{display:flex;flex-direction:column;gap:10px}
 .floor{display:grid;grid-template-columns:44px 1fr;gap:8px;align-items:start}
 .floor .fl{font-size:.8rem;color:var(--muted);padding-top:12px}
-.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
-.cell{border:1px solid transparent;border-radius:8px;padding:8px 6px;text-align:center;cursor:pointer;font-family:var(--f-mono);font-weight:600;line-height:1.2}
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.floor.solo{grid-template-columns:1fr}
+.cell .who{display:block;font-family:var(--f-body);font-weight:500;font-size:.78rem;color:var(--ink);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cell{border:1px solid transparent;border-radius:10px;padding:12px 8px;font-size:1.05rem;text-align:center;cursor:pointer;font-family:var(--f-mono);font-weight:600;line-height:1.2}
 .cell small{display:block;font-family:var(--f-body);font-weight:500;font-size:.7rem;margin-top:2px}
 .cell:hover{border-color:var(--ink)}
 .c-paid{background:var(--ok-soft);color:var(--ok)} .c-unpaid{background:var(--warn-soft);color:var(--warn)}
@@ -212,7 +214,8 @@ const S = {}; COLS.forEach(c => S[c] = {});
 const DEFAULTS = {dormName: 'หอพักเต็มสมบัติ', waterRate: 15, waterMin: 0, elecRate: 7, commonFee: 0, internetFee: 0, dueDay: 5, promptpay: '', sample: false,
   defaultRent: 3800, fridgeFee: 200, hotWaterFee: 200, wifiFee: 100};
 const ADDONS = [{key: 'fridge', label: 'ตู้เย็น', fee: 'fridgeFee'}, {key: 'hotWater', label: 'น้ำอุ่น', fee: 'hotWaterFee'}, {key: 'wifi', label: 'Wi-Fi', fee: 'wifiFee', bill: 'ค่า Wi-Fi'}];
-const DEFAULT_ROOM_NOS = '101-108, 201-208';
+const DEFAULT_ROOM_NOS = '175/1-175/16';
+const roomFloorGuess = no => no.includes('/') ? '' : no.charAt(0);
 const settings = () => {
   const st = {...DEFAULTS, ...(S.settings.main || {})};
   if (!st.dormName || st.dormName === 'หอพักของฉัน') st.dormName = DEFAULTS.dormName;
@@ -231,7 +234,8 @@ const VIEWS = [
   ['bills', 'บิลและการชำระ'], ['repairs', 'แจ้งซ่อม'], ['settings', 'ตั้งค่า']
 ];
 const hashView = (location.hash || '').slice(1);
-const ui = {view: VIEWS.some(v => v[0] === hashView) ? hashView : 'dashboard', month: thisMonth(), billFilter: 'all', tenantFilter: 'active'};
+const ui = {view: VIEWS.some(v => v[0] === hashView) ? hashView : hashView.startsWith('room/') ? 'room' : 'dashboard', roomId: hashView.startsWith('room/') ? decodeURIComponent(hashView.slice(5)) : '', month: thisMonth(), billFilter: 'all', tenantFilter: 'active'};
+function openRoom(id) { ui.view = 'room'; ui.roomId = id; try { history.replaceState(null, '', '#room/' + encodeURIComponent(id)); } catch (e) {} closeModal(); render(); window.scrollTo(0, 0); }
 
 function loadLocal() { try { const raw = localStorage.getItem(LS_KEY); if (raw) { const o = JSON.parse(raw); COLS.forEach(c => S[c] = o[c] || {}); } } catch (e) {} }
 function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
@@ -334,7 +338,7 @@ function render() {
   const openRepairs = withId('repairs').filter(r => r.status !== 'done').length;
   $('#tabs').innerHTML = VIEWS.map(([k, t]) => {
     const n = k === 'bills' ? overdue : k === 'repairs' ? openRepairs : 0;
-    return `<button class="tab" data-act="go" data-v="${k}" ${ui.view === k ? 'aria-current="page"' : ''}>${t}${n ? `<span class="badge">${n}</span>` : ''}</button>`;
+    return `<button class="tab" data-act="go" data-v="${k}" ${(ui.view === 'room' ? 'rooms' : ui.view) === k ? 'aria-current="page"' : ''}>${t}${n ? `<span class="badge">${n}</span>` : ''}</button>`;
   }).join('');
   $('#sideFoot').innerHTML = 'วันนี้ ' + dateLabel(todayStr()) + (mode === 'cloud' ? '<br><button class="btn sm" data-act="signOut" style="margin-top:8px">ออกจากระบบ</button>' : '');
   if (mode === 'login') { $('#view').innerHTML = viewLogin(); return; }
@@ -374,13 +378,14 @@ function viewDashboard() {
   const more = (arr, n) => arr.length > n ? `<div class="small muted" style="padding-top:6px">และอีก ${arr.length - n} รายการ</div>` : '';
 
   return `
-  <div class="head"><div><h2>ภาพรวม</h2><p>สรุปของเดือน${monthLabel(m)}</p></div>${monthPicker()}</div>
+  <div class="head"><div><h2>ภาพรวม</h2><p>สรุปของเดือน${monthLabel(m)} · กดที่ห้องเพื่อดูรายละเอียด</p></div>${monthPicker()}</div>
   <div class="stats">
     <div class="stat"><div class="k">ห้องทั้งหมด</div><div class="v">${rs.length}</div><div class="s">ว่าง ${vac} · ปิดซ่อม ${fix}</div></div>
     <div class="stat"><div class="k">มีผู้เช่า</div><div class="v">${occ}</div><div class="s">อัตราเข้าพัก ${rate}%</div><div class="meter"><i style="width:${rate}%"></i></div></div>
     <div class="stat"><div class="k">เก็บได้เดือนนี้ (บาท)</div><div class="v">${baht(got)}</div><div class="s">จากที่ออกบิล ${baht(billed)}</div><div class="meter"><i style="width:${billed ? Math.round(got / billed * 100) : 0}%"></i></div></div>
     <div class="stat ${owed ? 'bad' : ''}"><div class="k">ค้างชำระรวม (บาท)</div><div class="v">${baht(owed)}</div><div class="s">${unpaid.length} บิล ทุกเดือน</div></div>
   </div>
+  <div class="panel" style="margin-bottom:14px"><h3>สถานะทุกห้อง · บิล${monthLabel(m)}</h3>${roomMap(m)}</div>
   <div class="grid g2">
     <div class="panel"><h3>บิลที่ยังไม่จ่าย <button class="btn sm" data-act="go" data-v="bills">ดูทั้งหมด</button></h3><div class="list">
       ${unpaid.length ? unpaid.slice(0, 6).map(b => li(tag(b.roomNo), `<b>${esc(b.tenantName)}</b> <span class="muted small">· ${monthLabel(b.month, true)} · ครบกำหนด ${dateLabel(b.dueDate)}</span>`, `<span class="num">${baht(billTotal(b))}</span> ${billPill(b)}`, `data-act="bill" data-id="${b.id}" style="cursor:pointer"`)).join('') + more(unpaid, 6) : '<div class="empty">ไม่มีบิลค้าง ทุกห้องจ่ายครบแล้ว</div>'}
@@ -397,8 +402,7 @@ function viewDashboard() {
     </div></div>
     <div class="panel"><h3>รายรับย้อนหลัง 6 เดือน <span class="keys"><span><i style="background:var(--line)"></i>ออกบิล</span><span><i style="background:var(--accent)"></i>เก็บได้</span></span></h3>${barChart(incomeData, ['var(--line)', 'var(--accent)'])}</div>
     <div class="panel"><h3>หน่วยน้ำไฟรวม <span class="keys"><span><i style="background:var(--water)"></i>น้ำ (ลบ.ม.)</span><span><i style="background:var(--elec)"></i>ไฟ (kWh)</span></span></h3>${barChart(useData, ['var(--water)', 'var(--elec)'], true)}</div>
-  </div>
-  <div class="panel" style="margin-top:14px"><h3>ผังห้อง · สถานะบิล${monthLabel(m)}</h3>${roomMap(m)}</div>`;
+  </div>`;
 }
 
 function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
@@ -429,11 +433,12 @@ function roomMap(m) {
   const floors = {};
   rooms().forEach(r => { const f = r.floor || '-'; (floors[f] = floors[f] || []).push(r); });
   const keys = Object.keys(floors).sort((a, b) => String(a).localeCompare(String(b), 'th', {numeric: true}));
-  const cells = keys.map(f => `<div class="floor"><div class="fl">ชั้น ${esc(f)}</div><div class="rooms">${floors[f].map(r => {
-    const st = roomState(r); let c = 'vacant', t = 'ว่าง';
+  const one = keys.length === 1;
+  const cells = keys.map(f => `<div class="floor ${one ? 'solo' : ''}">${one ? '' : `<div class="fl">ชั้น ${esc(f)}</div>`}<div class="rooms">${floors[f].map(r => {
+    const st = roomState(r), tn = tenantOf(r.id); let c = 'vacant', t = 'ว่าง';
     if (st === 'fix') { c = 'fix'; t = 'ปิดซ่อม'; }
     else if (st === 'occ') { const b = billOf(r.id, m); if (!b) { c = 'nobill'; t = 'ยังไม่ออกบิล'; } else { c = billState(b); t = BILL_PILL[c][1]; } }
-    return `<button class="cell c-${c}" data-act="roomInfo" data-id="${r.id}">${esc(r.no)}<small>${t}</small></button>`;
+    return `<button class="cell c-${c}" data-act="room" data-id="${r.id}">${esc(r.no)}<span class="who">${tn ? esc(tn.name) : '&nbsp;'}</span><small>${t}</small></button>`;
   }).join('')}</div></div>`).join('');
   return `<div class="floors">${cells}</div><div class="legend"><span><i class="c-paid"></i>จ่ายแล้ว</span><span><i class="c-unpaid"></i>รอชำระ</span><span><i class="c-overdue"></i>เลยกำหนด</span><span><i class="c-nobill"></i>ยังไม่ออกบิล</span><span><i class="c-vacant"></i>ว่าง</span><span><i class="c-fix"></i>ปิดซ่อม</span></div>`;
 }
@@ -444,7 +449,7 @@ function viewRooms() {
   const label = {occ: '<span class="pill p-ok">มีผู้เช่า</span>', vacant: '<span class="pill p-idle">ว่าง</span>', fix: '<span class="pill p-fix">ปิดซ่อม</span>'};
   return `<div class="head"><div><h2>ห้องพัก</h2><p>${rs.length} ห้อง · ว่าง ${rs.filter(r => roomState(r) === 'vacant').length} ห้อง</p></div><div class="row">${rs.length < 16 ? '<button class="btn" data-act="bulkForm">สร้างหลายห้องทีเดียว</button>' : ''}<button class="btn primary" data-act="roomForm">เพิ่มห้อง</button></div></div>
   ${rs.length ? `<div class="tablewrap"><table><thead><tr><th>ห้อง</th><th>ชั้น</th><th>ประเภท</th><th class="r">ค่าเช่า/เดือน</th><th>ส่วนเสริม</th><th class="r">รวม/เดือน</th><th>สถานะ</th><th>ผู้เช่า</th><th></th></tr></thead><tbody>
-  ${rs.map(r => `<tr><td>${tag(r.no)}</td><td>${esc(r.floor)}</td><td>${esc(r.type || '-')}</td><td class="r num">${baht(r.rent)}</td><td>${esc(addonText(r) || '-')}</td><td class="r num">${baht(roomMonthly(r, st))}</td><td>${label[roomState(r)]}</td><td>${esc(tenantOf(r.id)?.name || '-')}</td><td class="r"><button class="btn sm" data-act="roomForm" data-id="${r.id}">แก้ไข</button></td></tr>`).join('')}
+  ${rs.map(r => `<tr><td>${tag(r.no)}</td><td>${esc(r.floor)}</td><td>${esc(r.type || '-')}</td><td class="r num">${baht(r.rent)}</td><td>${esc(addonText(r) || '-')}</td><td class="r num">${baht(roomMonthly(r, st))}</td><td>${label[roomState(r)]}</td><td>${esc(tenantOf(r.id)?.name || '-')}</td><td class="r"><button class="btn sm" data-act="room" data-id="${r.id}">เปิดห้อง</button></td></tr>`).join('')}
   </tbody></table></div>` : '<div class="panel empty">ยังไม่มีห้องพัก กด "สร้างหลายห้องทีเดียว" เพื่อสร้าง 16 ห้องในครั้งเดียว</div>'}`;
 }
 function roomForm(id) {
@@ -453,25 +458,31 @@ function roomForm(id) {
   const occupied = id && tenantOf(id);
   modal(`<header><h2>${id ? 'แก้ไขห้อง ' + esc(r.no) : 'เพิ่มห้องพัก'}</h2><button class="x" data-act="close" aria-label="ปิด">×</button></header>
   <form class="f" id="roomF">
-    <div class="fld"><label for="rf-no">เลขห้อง</label><input id="rf-no" name="no" required value="${esc(r.no)}"></div>
-    <div class="fld"><label for="rf-floor">ชั้น</label><input id="rf-floor" name="floor" value="${esc(r.floor)}" placeholder="เช่น 1"></div>
-    <div class="fld"><label for="rf-type">ประเภทห้อง</label><input id="rf-type" name="type" value="${esc(r.type)}" placeholder="แอร์ / พัดลม"></div>
-    <div class="fld"><label for="rf-rent">ค่าเช่าต่อเดือน (บาท)</label><input id="rf-rent" name="rent" type="number" min="0" step="1" required value="${esc(r.rent)}"></div>
-    <div class="fld"><label for="rf-sw">เลขมิเตอร์น้ำเริ่มต้น</label><input id="rf-sw" name="startWater" type="number" min="0" step="any" value="${esc(r.startWater)}"><span class="hint">ใช้เป็นค่าก่อนหน้าของการจดครั้งแรก</span></div>
-    <div class="fld"><label for="rf-se">เลขมิเตอร์ไฟเริ่มต้น</label><input id="rf-se" name="startElec" type="number" min="0" step="any" value="${esc(r.startElec)}"></div>
-    <div class="fld wide"><label>ส่วนเสริมของห้องนี้ (บวกในบิลทุกเดือน)</label><div class="row">${addonChecks(r.addons || {}, 'rf')}</div></div>
-    <div class="fld wide"><label class="check"><input type="checkbox" id="rf-fix" name="maintenance" ${r.maintenance ? 'checked' : ''}> ปิดห้องเพื่อซ่อมแซม (ไม่รับผู้เช่า)</label></div>
-    <div class="fld wide"><label for="rf-note">หมายเหตุ</label><input id="rf-note" name="note" value="${esc(r.note)}"></div>
+    ${roomFields(r)}
   </form>
   <div class="actions">${id ? `<button class="btn danger" data-act="roomDelete" data-id="${id}" data-confirm="1" ${occupied ? 'disabled title="ย้ายผู้เช่าออกก่อนจึงลบห้องได้"' : ''}>ลบห้อง</button>` : ''}<button class="btn" data-act="close">ยกเลิก</button><button class="btn primary" data-act="roomSave" data-id="${id || ''}">บันทึก</button></div>`);
 }
+const roomFields = r => `
+    <div class="fld"><label for="rf-no">เลขห้อง</label><input id="rf-no" name="no" required value="${esc(r.no)}"></div>
+    <div class="fld"><label for="rf-rent">ค่าเช่าต่อเดือน (บาท)</label><input id="rf-rent" name="rent" type="number" min="0" step="1" required value="${esc(r.rent)}"></div>
+    <div class="fld"><label for="rf-floor">ชั้น</label><input id="rf-floor" name="floor" value="${esc(r.floor)}" placeholder="เช่น 1"></div>
+    <div class="fld"><label for="rf-type">ประเภทห้อง</label><input id="rf-type" name="type" value="${esc(r.type)}" placeholder="แอร์ / พัดลม"></div>
+    <div class="fld"><label for="rf-size">ขนาดห้อง</label><input id="rf-size" name="size" value="${esc(r.size || '')}" placeholder="เช่น 24 ตร.ม."></div>
+    <div class="fld"><label for="rf-key">กุญแจ / คีย์การ์ด</label><input id="rf-key" name="keyInfo" value="${esc(r.keyInfo || '')}" placeholder="เช่น กุญแจ 2 ดอก การ์ด 1 ใบ"></div>
+    <div class="fld wide"><label>ส่วนเสริมของห้องนี้ (บวกในบิลทุกเดือน)</label><div class="row">${addonChecks(r.addons || {}, 'rf')}</div></div>
+    <div class="fld wide"><label for="rf-furn">เฟอร์นิเจอร์และของในห้อง</label><textarea id="rf-furn" name="furniture" rows="2" placeholder="เช่น เตียง ตู้เสื้อผ้า โต๊ะ แอร์ ทีวี">${esc(r.furniture || '')}</textarea></div>
+    <div class="fld"><label for="rf-sw">เลขมิเตอร์น้ำเริ่มต้น</label><input id="rf-sw" name="startWater" type="number" min="0" step="any" value="${esc(r.startWater)}"><span class="hint">ใช้เป็นค่าก่อนหน้าของการจดครั้งแรก</span></div>
+    <div class="fld"><label for="rf-se">เลขมิเตอร์ไฟเริ่มต้น</label><input id="rf-se" name="startElec" type="number" min="0" step="any" value="${esc(r.startElec)}"></div>
+    <div class="fld wide"><label for="rf-note">หมายเหตุ</label><textarea id="rf-note" name="note" rows="2">${esc(r.note || '')}</textarea></div>
+    <div class="fld wide"><label class="check"><input type="checkbox" id="rf-fix" name="maintenance" ${r.maintenance ? 'checked' : ''}> ปิดห้องเพื่อซ่อมแซม (ไม่รับผู้เช่า)</label></div>`;
 async function roomSave(id) {
   const f = $('#roomF'); if (!f.reportValidity()) return;
   const d = Object.fromEntries(new FormData(f));
   const no = d.no.trim();
   if (rooms().some(r => r.no === no && r.id !== id)) { toast('มีห้อง ' + no + ' อยู่แล้ว'); return; }
   const old = id ? S.rooms[id] : {};
-  const data = {...old, no, floor: d.floor.trim() || no.charAt(0), type: d.type.trim(), rent: +d.rent || 0, startWater: +d.startWater || 0, startElec: +d.startElec || 0, maintenance: !!d.maintenance, note: d.note.trim(), addons: addonsFrom(d)};
+  const data = {...old, no, floor: d.floor.trim() || roomFloorGuess(no), type: d.type.trim(), rent: +d.rent || 0, startWater: +d.startWater || 0, startElec: +d.startElec || 0, maintenance: !!d.maintenance, note: d.note.trim(), addons: addonsFrom(d),
+    size: d.size.trim(), keyInfo: d.keyInfo.trim(), furniture: d.furniture.trim()};
   closeModal(); if (await put('rooms', id || 'r' + uid(), data)) toast('บันทึกห้อง ' + no + ' แล้ว');
 }
 
@@ -480,8 +491,8 @@ const addonsFrom = d => Object.fromEntries(ADDONS.map(a => [a.key, !!d['addon_' 
 function parseRoomNos(text) {
   const out = [];
   for (const part of String(text).split(/[,\s]+/).filter(Boolean)) {
-    const m = part.match(/^(\d+)-(\d+)$/);
-    if (m && +m[2] >= +m[1] && +m[2] - +m[1] < 200) { for (let n = +m[1]; n <= +m[2]; n++) out.push(String(n).padStart(m[1].length, '0')); }
+    const m = part.match(/^(.*?)(\d+)-(?:\1)?(\d+)$/);
+    if (m && +m[3] >= +m[2] && +m[3] - +m[2] < 200) { for (let n = +m[2]; n <= +m[3]; n++) out.push(m[1] + String(n).padStart(m[2].length, '0')); }
     else out.push(part);
   }
   return [...new Set(out)];
@@ -490,7 +501,7 @@ function bulkForm() {
   const st = settings();
   modal(`<header><h2>สร้างหลายห้องทีเดียว</h2><button class="x" data-act="close" aria-label="ปิด">×</button></header>
   <form class="f" id="bulkF">
-    <div class="fld wide"><label for="bf-nos">เลขห้อง</label><input id="bf-nos" name="nos" required value="${esc(DEFAULT_ROOM_NOS)}"><span class="hint">ใส่เป็นช่วงหรือคั่นด้วยจุลภาค เช่น 101-108, 201-208 (ห้องที่มีอยู่แล้วจะข้ามไป)</span></div>
+    <div class="fld wide"><label for="bf-nos">เลขห้อง</label><input id="bf-nos" name="nos" required value="${esc(DEFAULT_ROOM_NOS)}"><span class="hint">ใส่เป็นช่วงหรือคั่นด้วยจุลภาค เช่น 175/1-175/16 หรือ 101-108, 201-208 (ห้องที่มีอยู่แล้วจะข้ามไป)</span></div>
     <div class="fld"><label for="bf-rent">ค่าเช่าต่อเดือน (บาท)</label><input id="bf-rent" name="rent" type="number" min="0" step="1" required value="${esc(st.defaultRent)}"></div>
     <div class="fld wide"><label>ส่วนเสริมที่ทุกห้องมี (ปล่อยว่างได้ แล้วค่อยติ๊กทีละห้องในหน้าแก้ไขห้อง)</label><div class="row">${addonChecks({}, 'bf')}</div></div>
   </form>
@@ -506,8 +517,25 @@ async function bulkSave() {
   if (!nos.length) { toast('ไม่มีห้องใหม่ให้สร้าง'); return; }
   if (nos.length > 200) { toast('สร้างได้ครั้งละไม่เกิน 200 ห้อง'); return; }
   const addons = addonsFrom(d); closeModal(); let n = 0;
-  for (const no of nos) if (await put('rooms', 'r' + uid(), {no, floor: no.charAt(0), type: '', rent: +d.rent || 0, startWater: 0, startElec: 0, maintenance: false, note: '', addons})) n++;
+  for (const no of nos) if (await put('rooms', 'r' + uid(), {no, floor: roomFloorGuess(no), type: '', rent: +d.rent || 0, startWater: 0, startElec: 0, maintenance: false, note: '', addons})) n++;
   toast(`สร้างห้องแล้ว ${n} ห้อง แก้ไขเลขห้องหรือส่วนเสริมได้ทีละห้อง`);
+}
+
+// ตั้ง 16 ห้องของหอ (175/1–175/16) ให้อัตโนมัติครั้งแรก
+// และเปลี่ยนเลขห้องตัวอย่าง 101–208 ที่ยังไม่ได้ใช้งานเป็นเลขจริง
+async function autoSetupRooms() {
+  const st = S.settings.main || {};
+  if (readOnly || st.sample || st.roomsSeeded) return;
+  const nos = parseRoomNos(DEFAULT_ROOM_NOS), rs = rooms();
+  const oldDefault = parseRoomNos('101-108, 201-208');
+  const untouched = rs.length === 16 && rs.every((r, i) => r.no === oldDefault[i]) && !Object.keys(S.tenants).length && !Object.keys(S.readings).length && !Object.keys(S.bills).length;
+  if (rs.length && !untouched) return;
+  const rent = +settings().defaultRent || 0;
+  if (untouched) { for (let i = 0; i < 16; i++) if (!await put('rooms', rs[i].id, {...S.rooms[rs[i].id], no: nos[i], floor: ''})) return; }
+  else for (let i = 0; i < nos.length; i++) {
+    if (!await put('rooms', 'r175-' + (i + 1), {no: nos[i], floor: '', type: '', rent, startWater: 0, startElec: 0, maintenance: false, note: '', addons: {}})) return;
+  }
+  await put('settings', 'main', {...(S.settings.main || {}), roomsSeeded: true});
 }
 
 /* ---------- tenants ---------- */
@@ -719,6 +747,42 @@ function repairDoneForm(id) {
   <div class="actions"><button class="btn" data-act="close">ยกเลิก</button><button class="btn primary" data-act="repairDoneSave" data-id="${id}">บันทึก</button></div>`);
 }
 
+/* ---------- room page ---------- */
+function viewRoom() {
+  const r = roomById(ui.roomId);
+  if (!r) return `<div class="head"><div><h2>ไม่พบห้องนี้</h2></div><button class="btn" data-act="go" data-v="rooms">กลับไปหน้าห้องพัก</button></div>`;
+  const id = r.id, st = settings(), t = tenantOf(id), state = roomState(r), all = rooms(), k = all.findIndex(x => x.id === id);
+  const prev = all[k - 1], next = all[k + 1];
+  const pill = {occ: '<span class="pill p-ok">มีผู้เช่า</span>', vacant: '<span class="pill p-idle">ว่าง</span>', fix: '<span class="pill p-fix">ปิดซ่อม</span>'}[state];
+  const bills = withId('bills').filter(b => b.roomId === id).sort((a, b) => b.month.localeCompare(a.month));
+  const reads = Object.values(S.readings).filter(x => x.roomId === id).sort((a, b) => b.month.localeCompare(a.month)).slice(0, 6);
+  const reps = withId('repairs').filter(x => x.roomId === id).sort((a, b) => (b.reportedAt || '').localeCompare(a.reportedAt || ''));
+  const past = withId('tenants').filter(x => x.roomId === id && x.status !== 'active').sort((a, b) => (b.moveOut || '').localeCompare(a.moveOut || ''));
+  const owed = bills.filter(b => b.status !== 'paid').reduce((s, b) => s + billTotal(b), 0);
+  const li = (a, b, c, act = '') => `<div class="li" ${act}>${a}<div class="grow">${b}</div>${c}</div>`;
+  return `<div class="head"><div><div class="row" style="gap:10px"><h2>ห้อง ${esc(r.no)}</h2>${pill}</div><p>ค่าเช่า ${baht(r.rent)}${roomAddons(r).length ? ' + ' + esc(addonText(r)) : ''} · รวม ${baht(roomMonthly(r, st))} บาท/เดือน</p></div>
+    <div class="row"><button class="btn" data-act="go" data-v="rooms">ห้องทั้งหมด</button>${prev ? `<button class="btn" data-act="room" data-id="${prev.id}" aria-label="ห้องก่อนหน้า">‹ ${esc(prev.no)}</button>` : ''}${next ? `<button class="btn" data-act="room" data-id="${next.id}" aria-label="ห้องถัดไป">${esc(next.no)} ›</button>` : ''}</div></div>
+  <div class="grid g2">
+    <div class="panel"><h3>ผู้เช่า</h3>
+      ${t ? `<dl class="kv"><dt>ชื่อ</dt><dd><b>${esc(t.name)}</b></dd><dt>เบอร์โทร</dt><dd>${esc(t.phone || '-')}</dd><dt>เข้าพัก</dt><dd>${dateLabel(t.moveIn)}</dd><dt>สิ้นสุดสัญญา</dt><dd>${dateLabel(t.contractEnd)}</dd><dt>เงินประกัน</dt><dd class="num">${baht(t.deposit)} บาท</dd>${t.emergencyName ? `<dt>ติดต่อฉุกเฉิน</dt><dd>${esc(t.emergencyName)} ${esc(t.emergencyPhone || '')}</dd>` : ''}${t.moveOutPlanned ? `<dt>แจ้งย้ายออก</dt><dd>${dateLabel(t.moveOutPlanned)}</dd>` : ''}</dl>
+        <div class="row" style="margin-top:12px"><button class="btn" data-act="tenantForm" data-id="${t.id}">แก้ไขข้อมูลผู้เช่า</button><button class="btn" data-act="moveOut" data-id="${t.id}">ย้ายออก</button></div>`
+      : `<p class="muted" style="margin-top:0">${state === 'fix' ? 'ห้องนี้ปิดซ่อมอยู่' : 'ห้องว่าง ยังไม่มีผู้เช่า'}</p>${state === 'vacant' ? `<button class="btn primary" data-act="tenantForm" data-room="${id}">ทำสัญญาผู้เช่าใหม่</button>` : ''}`}
+      ${past.length ? `<p class="small muted" style="margin-bottom:0">ผู้เช่าเก่า: ${past.slice(0, 3).map(x => esc(x.name) + ' (ออก ' + dateLabel(x.moveOut) + ')').join(', ')}</p>` : ''}
+    </div>
+    <div class="panel"><h3>บิลของห้องนี้ ${owed ? `<span class="pill p-bad">ค้าง ${baht(owed)} บาท</span>` : ''}</h3><div class="list">
+      ${bills.length ? bills.slice(0, 6).map(b => li(`<span class="small">${monthLabel(b.month, true)}</span>`, `<span class="num">${baht(billTotal(b))} บาท</span>`, billPill(b), `data-act="bill" data-id="${b.id}" style="cursor:pointer"`)).join('') : '<div class="empty">ยังไม่มีบิล</div>'}
+    </div></div>
+    <div class="panel"><h3>มิเตอร์ย้อนหลัง <button class="btn sm" data-act="go" data-v="meters">ไปจดมิเตอร์</button></h3><div class="list">
+      ${reads.length ? reads.map(x => { const u = usage(r, x.month); return li(`<span class="small">${monthLabel(x.month, true)}</span>`, `<span class="small muted">น้ำ</span> <span class="num">${baht(x.water)}</span> <span class="small muted">(${u ? baht(u.w) : '-'} หน่วย) · ไฟ</span> <span class="num">${baht(x.elec)}</span> <span class="small muted">(${u ? baht(u.e) : '-'} หน่วย)</span>`, ''); }).join('') : '<div class="empty">ยังไม่มีการจดมิเตอร์</div>'}
+    </div></div>
+    <div class="panel"><h3>แจ้งซ่อม <button class="btn sm" data-act="repairForm" data-room="${id}">แจ้งซ่อมห้องนี้</button></h3><div class="list">
+      ${reps.length ? reps.slice(0, 6).map(x => li(`<span class="small">${dateLabel(x.reportedAt)}</span>`, esc(x.title), `<span class="pill ${x.status === 'done' ? 'p-ok' : x.status === 'doing' ? 'p-fix' : 'p-warn'}">${x.status === 'done' ? 'เสร็จแล้ว' : x.status === 'doing' ? 'กำลังซ่อม' : 'รอดำเนินการ'}</span>`, `data-act="repairForm" data-id="${x.id}" style="cursor:pointer"`)).join('') : '<div class="empty">ไม่มีประวัติแจ้งซ่อม</div>'}
+    </div></div>
+  </div>
+  <div class="panel" style="margin-top:14px"><h3>รายละเอียดห้อง</h3><form class="f" id="roomF">${roomFields(r)}</form>
+    <div class="actions" style="margin-top:14px"><button class="btn danger" data-act="roomDelete" data-id="${id}" data-confirm="1" ${t ? 'disabled title="ย้ายผู้เช่าออกก่อนจึงลบห้องได้"' : ''}>ลบห้อง</button><button class="btn primary" data-act="roomSave" data-id="${id}">บันทึกรายละเอียด</button></div></div>`;
+}
+
 /* ---------- room info (from map) ---------- */
 function roomInfo(id) {
   const r = roomById(id), t = tenantOf(id), b = billOf(id, ui.month);
@@ -794,8 +858,8 @@ document.addEventListener('click', async ev => {
     case 'close': closeModal(); break;
     case 'roomForm': roomForm(id); break;
     case 'roomSave': roomSave(id); break;
-    case 'roomDelete': closeModal(); if (await remove('rooms', id)) toast('ลบห้องแล้ว'); break;
-    case 'roomInfo': roomInfo(id); break;
+    case 'roomDelete': closeModal(); if (await remove('rooms', id)) { toast('ลบห้องแล้ว'); if (ui.view === 'room') { ui.view = 'rooms'; render(); } } break;
+    case 'roomInfo': case 'room': openRoom(id); break;
     case 'bulkForm': bulkForm(); break;
     case 'bulkSave': el.disabled = true; await bulkSave(); break;
     case 'tFilter': ui.tenantFilter = el.dataset.f; render(); break;
@@ -889,6 +953,7 @@ async function startSession(session) {
   if (!data.length) { mode = 'denied'; render(); return; }
   try { await loadAll(); } catch (e) { mode = 'error'; render(); return; }
   mode = 'cloud'; subscribeCloud(); render();
+  autoSetupRooms();
 }
 
 /* ---------- excel ---------- */
@@ -910,12 +975,12 @@ async function exportExcel() {
   XLSX.writeFile(wb, 'dorm-' + todayStr() + '.xlsx');
 }
 
-const VIEW_FN = {dashboard: viewDashboard, rooms: viewRooms, tenants: viewTenants, meters: viewMeters, bills: viewBills, repairs: viewRepairs, settings: viewSettings};
+const VIEW_FN = {room: viewRoom, dashboard: viewDashboard, rooms: viewRooms, tenants: viewTenants, meters: viewMeters, bills: viewBills, repairs: viewRepairs, settings: viewSettings};
 
 /* ---------- boot ---------- */
 async function boot() {
   render();
-  if (!CFG.supabaseUrl || !CFG.supabaseAnonKey) { mode = 'local'; loadLocal(); render(); return; }
+  if (!CFG.supabaseUrl || !CFG.supabaseAnonKey) { mode = 'local'; loadLocal(); render(); autoSetupRooms(); return; }
   if (!window.supabase) { mode = 'error'; render(); return; }
   sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: true}});
   let started = false;
