@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ระบบจัดการหอพัก</title>
+<title>หอพักเต็มสมบัติ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: ledger-like work surface, side nav on desktop, scrolling tab strip on phone; room numbers shown as key tags */
+/* Palette: warm brown and golden yellow. Layout: ledger-like work surface, side nav on desktop, scrolling tab strip on phone; room numbers shown as key tags */
 :root{
-  --bg:#edf1ef; --surface:#ffffff; --surface-2:#f5f8f6; --ink:#15211d; --muted:#5a6b65; --line:#d5dfdb;
-  --accent:#0e6b57; --accent-ink:#ffffff; --accent-soft:#dbeee7;
+  --bg:#f5efe3; --surface:#fffdf8; --surface-2:#faf4e8; --ink:#2b1d12; --muted:#76624d; --line:#e6d8bf;
+  --accent:#7b4a1e; --accent-ink:#fffaf0; --accent-soft:#f6e6c4; --gold:#d9a21b; --gold-ink:#3a2408;
   --ok:#1b7443; --ok-soft:#ddf1e5; --warn:#9a5800; --warn-soft:#fbecd3; --bad:#b3261e; --bad-soft:#fde3df;
-  --idle:#7f8d88; --idle-soft:#e6ebe9; --fix:#5948b0; --fix-soft:#e9e6fa;
+  --idle:#8a7c6b; --idle-soft:#ede5d8; --fix:#5948b0; --fix-soft:#e9e6fa;
   --water:#2a72b8; --elec:#c98a00;
   --f-display:"Anuphan","IBM Plex Sans Thai",system-ui,sans-serif;
   --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -21,16 +21,16 @@
   --r:10px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0e1513; --surface:#151f1c; --surface-2:#1b2723; --ink:#e3ece8; --muted:#97aaa3; --line:#283632;
-  --accent:#4cc39f; --accent-ink:#06231b; --accent-soft:#163a30;
+  --bg:#18120c; --surface:#211910; --surface-2:#2a2016; --ink:#f2e7d5; --muted:#b9a589; --line:#3b2e20;
+  --accent:#e2b155; --accent-ink:#2a1906; --accent-soft:#3e2d15; --gold:#e8b630; --gold-ink:#2a1906;
   --ok:#5bcf8a; --ok-soft:#153222; --warn:#f0b14a; --warn-soft:#382811; --bad:#ff8b7c; --bad-soft:#3b1a16;
-  --idle:#7c8b86; --idle-soft:#212b28; --fix:#ab9eff; --fix-soft:#262149;
+  --idle:#8a7c6b; --idle-soft:#2d251c; --fix:#ab9eff; --fix-soft:#262149;
   --water:#6fb1ef; --elec:#f2c046; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0e1513; --surface:#151f1c; --surface-2:#1b2723; --ink:#e3ece8; --muted:#97aaa3; --line:#283632;
-  --accent:#4cc39f; --accent-ink:#06231b; --accent-soft:#163a30;
+  --bg:#18120c; --surface:#211910; --surface-2:#2a2016; --ink:#f2e7d5; --muted:#b9a589; --line:#3b2e20;
+  --accent:#e2b155; --accent-ink:#2a1906; --accent-soft:#3e2d15; --gold:#e8b630; --gold-ink:#2a1906;
   --ok:#5bcf8a; --ok-soft:#153222; --warn:#f0b14a; --warn-soft:#382811; --bad:#ff8b7c; --bad-soft:#3b1a16;
-  --idle:#7c8b86; --idle-soft:#212b28; --fix:#ab9eff; --fix-soft:#262149;
+  --idle:#8a7c6b; --idle-soft:#2d251c; --fix:#ab9eff; --fix-soft:#262149;
   --water:#6fb1ef; --elec:#f2c046; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -44,10 +44,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
 .small{font-size:.85rem}
-.app{display:grid;grid-template-columns:1fr;min-height:100%}
+.app{display:grid;grid-template-columns:1fr;grid-template-rows:auto 1fr;min-height:100%}
 .side{min-width:0;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
 .brand{display:flex;align-items:center;gap:10px;padding:12px 16px 4px}
-.brand .mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;flex:none}
+.brand .mark{width:30px;height:30px;border-radius:8px;background:var(--gold);color:var(--gold-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;flex:none}
 .brand .sub{font-size:.78rem;color:var(--muted)}
 nav.tabs{display:flex;gap:4px;overflow-x:auto;padding:6px 12px 8px;scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
@@ -58,7 +58,7 @@ nav.tabs::-webkit-scrollbar{display:none}
 .side-foot{display:none}
 main{padding-block:18px 48px;padding-inline:16px;min-width:0;max-width:1180px;width:100%}
 @media (min-width:900px){
-  .app{grid-template-columns:232px 1fr}
+  .app{grid-template-columns:232px 1fr;grid-template-rows:1fr}
   .side{position:sticky;top:0;height:100vh;border-bottom:0;border-right:1px solid var(--line);display:flex;flex-direction:column}
   .brand{padding:20px 18px 12px}
   nav.tabs{flex-direction:column;overflow:visible;padding:8px 12px}
@@ -96,7 +96,7 @@ main{padding-block:18px 48px;padding-inline:16px;min-width:0;max-width:1180px;wi
 .stat .s{font-size:.8rem;color:var(--muted)}
 .stat.bad .v{color:var(--bad)}
 .meter{height:6px;border-radius:9px;background:var(--idle-soft);overflow:hidden;margin-top:8px}
-.meter i{display:block;height:100%;background:var(--accent)}
+.meter i{display:block;height:100%;background:var(--gold)}
 .tag{font-family:var(--f-mono);font-weight:600;font-size:.88rem;display:inline-flex;align-items:center;gap:6px;padding:1px 8px 1px 6px;border:1px solid var(--line);background:var(--surface-2);border-radius:5px 12px 12px 5px;white-space:nowrap}
 .tag::before{content:"";width:6px;height:6px;border-radius:50%;border:1.5px solid var(--muted)}
 .pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:.78rem;font-weight:500;white-space:nowrap}
@@ -172,7 +172,7 @@ pre.copy{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(-
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
 </style>
 <style>body{margin:0}html,body{height:100%}img{max-width:100%}</style>
-<script src="config.js"></script>
+<script src="config.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
 </head>
 <body>
@@ -180,7 +180,7 @@ pre.copy{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(-
 
 <div class="app">
   <aside class="side">
-    <div class="brand"><div class="mark">ห</div><div><h1 id="dormName">หอพัก</h1><div class="sub" id="modeText">กำลังเชื่อมต่อข้อมูล</div></div></div>
+    <div class="brand"><div class="mark">ต</div><div><h1 id="dormName">หอพักเต็มสมบัติ</h1><div class="sub" id="modeText">กำลังเชื่อมต่อข้อมูล</div></div></div>
     <nav class="tabs" id="tabs"></nav>
     <div class="side-foot" id="sideFoot"></div>
   </aside>
@@ -208,8 +208,8 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 /* ---------- data ---------- */
 const COLS = ['rooms', 'tenants', 'readings', 'bills', 'repairs', 'settings'];
 const S = {}; COLS.forEach(c => S[c] = {});
-const DEFAULTS = {dormName: 'หอพักของฉัน', waterRate: 18, waterMin: 0, elecRate: 8, commonFee: 0, internetFee: 0, dueDay: 5, promptpay: '', sample: false};
-const settings = () => ({...DEFAULTS, ...(S.settings.main || {})});
+const DEFAULTS = {dormName: 'หอพักเต็มสมบัติ', waterRate: 18, waterMin: 0, elecRate: 8, commonFee: 0, internetFee: 0, dueDay: 5, promptpay: '', sample: false};
+const settings = () => { const st = {...DEFAULTS, ...(S.settings.main || {})}; if (!st.dormName || st.dormName === 'หอพักของฉัน') st.dormName = DEFAULTS.dormName; return st; };
 let mode = 'loading', sb = null, userEmail = '', readOnly = false;
 const CFG = window.DORM_CONFIG || {};
 const LS_KEY = 'dorm-manager-v1';
@@ -801,7 +801,7 @@ function viewLogin() {
     <p style="margin:0">ส่งลิงก์เข้าสู่ระบบไปที่ <b>${esc(loginSent)}</b> แล้ว เปิดอีเมลแล้วกดลิงก์ "Log In" ระบบจะพากลับมาที่หน้านี้เอง</p>
     <p class="small muted" style="margin:0">ไม่เจออีเมล ลองดูในโฟลเดอร์จดหมายขยะ (Spam) หรือรอสักครู่</p>
     <button class="btn" data-act="loginBack">ใช้อีเมลอื่น</button></div></div>`;
-  return `<div class="login"><div><h2>${esc(st.dormName === DEFAULTS.dormName ? 'ระบบจัดการหอพัก' : st.dormName)}</h2><p class="muted" style="margin:4px 0 0">เข้าสู่ระบบเพื่อดูและบันทึกข้อมูลหอพัก</p></div>
+  return `<div class="login"><div><h2>${esc(st.dormName)}</h2><p class="muted" style="margin:4px 0 0">เข้าสู่ระบบเพื่อดูและบันทึกข้อมูลหอพัก</p></div>
   <div class="panel">
     ${CFG.googleLogin ? `<button class="btn primary big" data-act="loginGoogle">เข้าสู่ระบบด้วย Google</button><div class="or">หรือ</div>` : ''}
     <form id="loginF" style="display:flex;flex-direction:column;gap:10px">
@@ -858,7 +858,8 @@ const VIEW_FN = {dashboard: viewDashboard, rooms: viewRooms, tenants: viewTenant
 /* ---------- boot ---------- */
 async function boot() {
   render();
-  if (!CFG.supabaseUrl || !CFG.supabaseAnonKey || !window.supabase) { mode = 'local'; loadLocal(); render(); return; }
+  if (!CFG.supabaseUrl || !CFG.supabaseAnonKey) { mode = 'local'; loadLocal(); render(); return; }
+  if (!window.supabase) { mode = 'error'; render(); return; }
   sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: true}});
   let started = false;
   sb.auth.onAuthStateChange((event, session) => {
