@@ -1,4 +1,8 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ระบบจัดการหอพัก</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -159,8 +163,20 @@ form.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px)
 pre.copy{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--f-body);font-size:.88rem;margin:0}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.9rem;z-index:60;max-width:calc(100% - 32px)}
 .loading{padding:40px 0;color:var(--muted)}
+.login{max-width:420px;margin:8vh auto 0;display:flex;flex-direction:column;gap:14px}
+.login .panel{display:flex;flex-direction:column;gap:12px;padding:22px}
+.login .big{width:100%;justify-content:center;min-height:46px;font-size:1rem}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.app.locked .side nav,.app.locked .side-foot{display:none!important}
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
 </style>
+<style>body{margin:0}html,body{height:100%}img{max-width:100%}</style>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+</head>
+<body>
+
 
 <div class="app">
   <aside class="side">
@@ -194,7 +210,8 @@ const COLS = ['rooms', 'tenants', 'readings', 'bills', 'repairs', 'settings'];
 const S = {}; COLS.forEach(c => S[c] = {});
 const DEFAULTS = {dormName: 'หอพักของฉัน', waterRate: 18, waterMin: 0, elecRate: 8, commonFee: 0, internetFee: 0, dueDay: 5, promptpay: '', sample: false};
 const settings = () => ({...DEFAULTS, ...(S.settings.main || {})});
-let mode = 'loading', db = null, readOnly = false;
+let mode = 'loading', sb = null, userEmail = '', readOnly = false;
+const CFG = window.DORM_CONFIG || {};
 const LS_KEY = 'dorm-manager-v1';
 
 const VIEWS = [
@@ -206,35 +223,62 @@ const ui = {view: VIEWS.some(v => v[0] === hashView) ? hashView : 'dashboard', m
 
 function loadLocal() { try { const raw = localStorage.getItem(LS_KEY); if (raw) { const o = JSON.parse(raw); COLS.forEach(c => S[c] = o[c] || {}); } } catch (e) {} }
 function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} }
-function dbErr(e) {
-  const c = e && e.code;
-  if (c === 'quota_exceeded') return 'พื้นที่เก็บข้อมูลเต็ม ลองลบข้อมูลเก่าที่ไม่ใช้แล้ว';
-  if (c === 'invalid_argument') return 'บัญชีนี้ไม่มีสิทธิ์แก้ไขข้อมูล หรือข้อมูลไม่ถูกต้อง';
-  if (c === 'resource_exhausted') return 'บันทึกถี่เกินไป รอสักครู่แล้วลองใหม่';
+function cloudErr(e) {
+  const m = String((e && (e.message || e.code)) || '');
+  if (/row-level security|permission|42501/i.test(m)) return 'บัญชีนี้ไม่มีสิทธิ์แก้ไขข้อมูล';
+  if (/JWT|expired|401/i.test(m)) return 'หมดเวลาการเข้าสู่ระบบ ลองโหลดหน้านี้ใหม่';
+  if (/Failed to fetch|network/i.test(m)) return 'บันทึกไม่สำเร็จ เช็กอินเทอร์เน็ตแล้วลองใหม่';
   return 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง';
 }
 async function put(col, id, data) {
   if (readOnly) { toast('บัญชีนี้ดูข้อมูลได้อย่างเดียว'); return false; }
+  const before = S[col][id];
   S[col] = {...S[col], [id]: data}; scheduleRender();
-  if (mode === 'db') { try { await db.collection(col).doc(id).set(data); } catch (e) { toast(dbErr(e)); return false; } }
-  else saveLocal();
+  if (mode === 'cloud') {
+    const {error} = await sb.from('docs').upsert({col, id, data, updated_at: new Date().toISOString()});
+    if (error) { const o = {...S[col]}; if (before) o[id] = before; else delete o[id]; S[col] = o; scheduleRender(); toast(cloudErr(error)); return false; }
+  } else saveLocal();
   return true;
 }
 async function remove(col, id) {
   if (readOnly) { toast('บัญชีนี้ดูข้อมูลได้อย่างเดียว'); return false; }
+  const before = S[col][id];
   const o = {...S[col]}; delete o[id]; S[col] = o; scheduleRender();
-  if (mode === 'db') { try { await db.collection(col).doc(id).delete(); } catch (e) { toast(dbErr(e)); return false; } }
-  else saveLocal();
+  if (mode === 'cloud') {
+    const {error} = await sb.from('docs').delete().match({col, id});
+    if (error) { S[col] = {...S[col], [id]: before}; scheduleRender(); toast(cloudErr(error)); return false; }
+  } else saveLocal();
   return true;
 }
-function subscribe() {
-  COLS.forEach(col => {
-    db.collection(col).onSnapshot(snap => {
-      const o = {}; snap.docs.forEach(d => { o[d.id] = d.data(); });
-      S[col] = o; scheduleRender();
-    }, err => { if (err && err.code !== 'revoked') toast('เชื่อมต่อข้อมูลไม่ได้ ลองเปิดหน้านี้ใหม่'); });
-  });
+async function loadAll() {
+  const rows = [];
+  for (let from = 0; ; from += 1000) {
+    const {data, error} = await sb.from('docs').select('col,id,data').order('col').order('id').range(from, from + 999);
+    if (error) throw error;
+    rows.push(...data); if (data.length < 1000) break;
+  }
+  const fresh = {}; COLS.forEach(c => fresh[c] = {});
+  rows.forEach(r => { if (fresh[r.col]) fresh[r.col][r.id] = r.data; });
+  COLS.forEach(c => S[c] = fresh[c]);
 }
+async function putMany(rows) {
+  for (let i = 0; i < rows.length; i += 400) {
+    const {error} = await sb.from('docs').upsert(rows.slice(i, i + 400).map(r => ({...r, updated_at: new Date().toISOString()})));
+    if (error) throw error;
+  }
+}
+let channel = null;
+function subscribeCloud() {
+  if (channel) sb.removeChannel(channel);
+  channel = sb.channel('docs-live').on('postgres_changes', {event: '*', schema: 'public', table: 'docs'}, p => {
+    if (p.eventType === 'DELETE') { const r = p.old || {}; if (S[r.col] && r.id in S[r.col]) { const o = {...S[r.col]}; delete o[r.id]; S[r.col] = o; } }
+    else { const r = p.new || {}; if (S[r.col]) S[r.col] = {...S[r.col], [r.id]: r.data}; }
+    scheduleRender();
+  }).subscribe();
+}
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && mode === 'cloud') { try { await loadAll(); scheduleRender(); } catch (e) {} }
+});
 
 /* ---------- derived ---------- */
 const withId = col => Object.entries(S[col]).map(([id, v]) => ({id, ...v}));
@@ -272,17 +316,21 @@ document.addEventListener('focusout', () => { if (pending) setTimeout(() => { if
 function render() {
   const st = settings();
   $('#dormName').textContent = st.dormName;
-  $('#modeText').textContent = mode === 'db' ? 'ข้อมูลบันทึกออนไลน์' : mode === 'local' ? 'โหมดทดลองในเบราว์เซอร์' : 'กำลังเชื่อมต่อข้อมูล';
+  $('#modeText').textContent = mode === 'cloud' ? userEmail : mode === 'local' ? 'ข้อมูลเก็บในเบราว์เซอร์นี้' : '';
+  $('.app').classList.toggle('locked', mode === 'login' || mode === 'denied' || mode === 'loading');
   const overdue = withId('bills').filter(b => billState(b) === 'overdue').length;
   const openRepairs = withId('repairs').filter(r => r.status !== 'done').length;
   $('#tabs').innerHTML = VIEWS.map(([k, t]) => {
     const n = k === 'bills' ? overdue : k === 'repairs' ? openRepairs : 0;
     return `<button class="tab" data-act="go" data-v="${k}" ${ui.view === k ? 'aria-current="page"' : ''}>${t}${n ? `<span class="badge">${n}</span>` : ''}</button>`;
   }).join('');
-  $('#sideFoot').textContent = 'วันนี้ ' + dateLabel(todayStr());
+  $('#sideFoot').innerHTML = 'วันนี้ ' + dateLabel(todayStr()) + (mode === 'cloud' ? '<br><button class="btn sm" data-act="signOut" style="margin-top:8px">ออกจากระบบ</button>' : '');
+  if (mode === 'login') { $('#view').innerHTML = viewLogin(); return; }
+  if (mode === 'denied') { $('#view').innerHTML = viewDenied(); return; }
+  if (mode === 'error') { $('#view').innerHTML = `<div class="login"><div class="panel"><h2>เชื่อมต่อฐานข้อมูลไม่ได้</h2><p class="muted" style="margin:0">เช็กอินเทอร์เน็ตแล้วลองใหม่ ถ้ายังไม่ได้ ให้ผู้ดูแลตรวจการตั้งค่าในไฟล์ config.js</p><button class="btn primary big" data-act="reload">ลองใหม่</button></div></div>`; return; }
   if (mode === 'loading') { $('#view').innerHTML = '<div class="loading">กำลังโหลดข้อมูลหอพัก</div>'; return; }
   let banner = '';
-  if (mode === 'local') banner += `<div class="banner warn"><span>โหมดทดลอง: ข้อมูลเก็บไว้ในเบราว์เซอร์นี้เท่านั้น เปิดหน้านี้ผ่าน claude.ai โดยล็อกอินอยู่เพื่อบันทึกออนไลน์</span></div>`;
+  if (mode === 'local') banner += `<div class="banner warn"><span>ข้อมูลเก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น เปิดจากเครื่องอื่นจะไม่เห็น และถ้าล้างข้อมูลเบราว์เซอร์จะหาย ควรกดดาวน์โหลดไฟล์สำรองไว้เป็นประจำ</span><button class="btn sm" data-act="downloadBackup">ดาวน์โหลดไฟล์สำรอง</button></div>`;
   if (readOnly) banner += `<div class="banner warn"><span>บัญชีนี้ดูข้อมูลได้อย่างเดียว แก้ไขไม่ได้</span></div>`;
   if (st.sample) banner += `<div class="banner info"><span>ตอนนี้แสดง <b>ข้อมูลตัวอย่าง</b> ให้ลองกดเล่นได้ พร้อมใช้จริงเมื่อไหร่ก็ล้างทิ้งได้เลย</span><button class="btn sm danger" data-act="clearSample" data-confirm="1">ล้างข้อมูลตัวอย่าง</button></div>`;
   $('#view').innerHTML = banner + (VIEW_FN[ui.view] || viewDashboard)();
@@ -538,7 +586,7 @@ function viewBills() {
   const list = all.filter(b => f === 'all' || (f === 'paid' ? b.status === 'paid' : b.status !== 'paid'));
   const sum = all.reduce((s, b) => s + billTotal(b), 0), paid = all.filter(b => b.status === 'paid').reduce((s, b) => s + billTotal(b), 0);
   const older = withId('bills').filter(b => b.month < m && b.status !== 'paid');
-  return `<div class="head"><div><h2>บิลและการชำระ</h2><p>${all.length} บิล · ยอดรวม ${baht(sum)} บาท · เก็บแล้ว ${baht(paid)} บาท</p></div><div class="row">${monthPicker()}<button class="btn" data-act="go" data-v="meters">จดมิเตอร์และออกบิล</button></div></div>
+  return `<div class="head"><div><h2>บิลและการชำระ</h2><p>${all.length} บิล · ยอดรวม ${baht(sum)} บาท · เก็บแล้ว ${baht(paid)} บาท</p></div><div class="row">${monthPicker()}<button class="btn" data-act="go" data-v="meters">จดมิเตอร์และออกบิล</button><button class="btn" data-act="exportExcel">ส่งออก Excel</button></div></div>
   ${older.length ? `<div class="banner warn"><span>ยังมีบิลเดือนก่อนค้างอยู่ ${older.length} บิล รวม ${baht(older.reduce((s, b) => s + billTotal(b), 0))} บาท</span><button class="btn sm" data-act="month" data-to="${older.sort((a, b) => a.month.localeCompare(b.month))[0].month}">ดูเดือนที่ค้าง</button></div>` : ''}
   <div class="chips">${[['all', 'ทั้งหมด'], ['unpaid', 'ยังไม่จ่าย'], ['paid', 'จ่ายแล้ว']].map(([k, t]) => `<button class="chip" data-act="bFilter" data-f="${k}" aria-pressed="${f === k}">${t}</button>`).join('')}</div>
   ${list.length ? `<div class="tablewrap"><table><thead><tr><th>ห้อง</th><th>ผู้เช่า</th><th class="r">น้ำ</th><th class="r">ไฟ</th><th class="r">ยอดรวม (บาท)</th><th>ครบกำหนด</th><th>สถานะ</th><th></th></tr></thead><tbody>
@@ -652,9 +700,10 @@ function viewSettings() {
     <div class="fld"><label for="st-dd">วันครบกำหนดชำระ (วันที่ของเดือนถัดไป)</label><input id="st-dd" name="dueDay" type="number" min="1" max="28" value="${esc(st.dueDay)}"></div>
     <div class="fld"><label for="st-pp">เบอร์พร้อมเพย์ (แสดงในบิล)</label><input id="st-pp" name="promptpay" value="${esc(st.promptpay)}"></div>
   </form><div class="actions" style="margin-top:14px"><button class="btn primary" data-act="saveSettings">บันทึกการตั้งค่า</button></div></div>
+  ${mode === 'cloud' ? `<div class="panel" style="margin-top:14px"><h3>บัญชีผู้ใช้</h3><div class="row" style="justify-content:space-between"><span>เข้าสู่ระบบด้วย <b>${esc(userEmail)}</b></span><button class="btn" data-act="signOut">ออกจากระบบ</button></div></div>` : ''}
   <div class="panel" style="margin-top:14px"><h3>ข้อมูลในระบบ</h3>
     <p class="small muted" style="margin-top:0">ห้อง ${Object.keys(S.rooms).length} · ผู้เช่า ${Object.keys(S.tenants).length} · การจดมิเตอร์ ${Object.keys(S.readings).length} · บิล ${Object.keys(S.bills).length} · งานซ่อม ${Object.keys(S.repairs).length}</p>
-    <div class="row"><button class="btn" data-act="copyBackup">คัดลอกข้อมูลสำรอง (JSON)</button>${st.sample ? '<button class="btn danger" data-act="clearSample" data-confirm="1">ล้างข้อมูลตัวอย่าง</button>' : ''}</div>
+    <div class="row"><button class="btn primary" data-act="exportExcel">ส่งออกเป็น Excel</button><button class="btn" data-act="downloadBackup">ดาวน์โหลดไฟล์สำรอง</button><label class="btn" for="restoreFile">นำเข้าไฟล์สำรอง</label><input type="file" id="restoreFile" accept=".json,application/json" hidden><button class="btn" data-act="copyBackup">คัดลอกข้อมูลสำรอง (JSON)</button></div><p class="small muted">ไฟล์ Excel และไฟล์สำรองมีข้อมูลผู้เช่า เก็บไว้ในเครื่องตัวเอง อย่าอัปโหลดขึ้น GitHub</p><div>${st.sample ? '<button class="btn danger" data-act="clearSample" data-confirm="1">ล้างข้อมูลตัวอย่าง</button>' : ''}</div>
   </div>`;
 }
 async function saveSettings() {
@@ -716,28 +765,115 @@ document.addEventListener('click', async ev => {
     case 'repairDelete': closeModal(); await remove('repairs', id); break;
     case 'saveSettings': saveSettings(); break;
     case 'copyBackup': copy(JSON.stringify(S, null, 1)); break;
+    case 'downloadBackup': { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 1)], {type: 'application/json'})); a.download = 'dorm-backup-' + todayStr() + '.json'; document.body.appendChild(a); a.click(); a.remove(); break; }
     case 'clearSample': closeModal(); clearSample(); break;
+    case 'exportExcel': el.disabled = true; await exportExcel(); el.disabled = false; break;
+    case 'loginEmail': el.disabled = true; await loginEmail(); el.disabled = false; break;
+    case 'loginGoogle': await sb.auth.signInWithOAuth({provider: 'google', options: {redirectTo: redirectUrl()}}); break;
+    case 'loginBack': loginSent = ''; render(); break;
+    case 'signOut': await sb.auth.signOut(); break;
+    case 'reload': location.reload(); break;
   }
 });
 document.addEventListener('change', ev => { const tr = ev.target.closest && ev.target.closest('tr[data-room]'); if (tr && ev.target.dataset.meter) saveMeterRow(tr); });
+document.addEventListener('change', ev => {
+  if (ev.target.id !== 'restoreFile' || !ev.target.files[0]) return;
+  const fr = new FileReader();
+  fr.onload = async () => {
+    let o; try { o = JSON.parse(fr.result); if (!o || typeof o.rooms !== 'object') throw 0; } catch (e) { toast('ไฟล์นี้ไม่ใช่ไฟล์สำรองของระบบหอพัก'); return; }
+    if (mode === 'cloud') {
+      const rows = []; COLS.forEach(c => Object.entries(o[c] || {}).forEach(([id, data]) => rows.push({col: c, id, data})));
+      toast('กำลังนำเข้า ' + rows.length + ' รายการ');
+      try { await putMany(rows); await loadAll(); render(); toast('นำเข้าข้อมูลสำรองแล้ว'); } catch (e) { toast(cloudErr(e)); }
+    } else { COLS.forEach(c => S[c] = o[c] || {}); saveLocal(); render(); toast('นำเข้าข้อมูลสำรองแล้ว'); }
+    ev.target.value = '';
+  };
+  fr.readAsText(ev.target.files[0]);
+});
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('#modal').hidden) closeModal(); });
-document.addEventListener('submit', ev => ev.preventDefault());
+document.addEventListener('submit', ev => { ev.preventDefault(); if (ev.target.id === 'loginF') loginEmail(); });
+
+/* ---------- login ---------- */
+let loginSent = '';
+function viewLogin() {
+  const st = settings();
+  if (loginSent) return `<div class="login"><div class="panel"><h2>เช็กอีเมลของคุณ</h2>
+    <p style="margin:0">ส่งลิงก์เข้าสู่ระบบไปที่ <b>${esc(loginSent)}</b> แล้ว เปิดอีเมลแล้วกดลิงก์ "Log In" ระบบจะพากลับมาที่หน้านี้เอง</p>
+    <p class="small muted" style="margin:0">ไม่เจออีเมล ลองดูในโฟลเดอร์จดหมายขยะ (Spam) หรือรอสักครู่</p>
+    <button class="btn" data-act="loginBack">ใช้อีเมลอื่น</button></div></div>`;
+  return `<div class="login"><div><h2>${esc(st.dormName === DEFAULTS.dormName ? 'ระบบจัดการหอพัก' : st.dormName)}</h2><p class="muted" style="margin:4px 0 0">เข้าสู่ระบบเพื่อดูและบันทึกข้อมูลหอพัก</p></div>
+  <div class="panel">
+    ${CFG.googleLogin ? `<button class="btn primary big" data-act="loginGoogle">เข้าสู่ระบบด้วย Google</button><div class="or">หรือ</div>` : ''}
+    <form id="loginF" style="display:flex;flex-direction:column;gap:10px">
+      <div class="fld"><label for="lg-email">อีเมล</label><input id="lg-email" name="email" type="email" required autocomplete="email" inputmode="email" placeholder="name@gmail.com"></div>
+      <button class="btn ${CFG.googleLogin ? '' : 'primary'} big" data-act="loginEmail" type="button">ส่งลิงก์เข้าสู่ระบบทางอีเมล</button>
+    </form>
+    <p class="small muted" style="margin:0">เข้าสู่ระบบครั้งเดียว เครื่องนี้จะจำไว้ ครั้งต่อไปเปิดมาใช้ได้เลย</p>
+  </div></div>`;
+}
+function viewDenied() {
+  return `<div class="login"><div class="panel"><h2>บัญชีนี้ยังไม่ได้รับอนุญาต</h2>
+  <p style="margin:0">คุณเข้าสู่ระบบด้วย <b>${esc(userEmail)}</b> แต่อีเมลนี้ยังไม่อยู่ในรายชื่อผู้ใช้ของหอพัก ส่งอีเมลนี้ให้ผู้ดูแลเพื่อเพิ่มสิทธิ์</p>
+  <button class="btn big" data-act="signOut">ออกจากระบบ แล้วใช้อีเมลอื่น</button></div></div>`;
+}
+const redirectUrl = () => location.origin + location.pathname;
+async function loginEmail() {
+  const f = $('#loginF'); if (!f.reportValidity()) return;
+  const email = $('#lg-email').value.trim();
+  const {error} = await sb.auth.signInWithOtp({email, options: {emailRedirectTo: redirectUrl()}});
+  if (error) { toast(/rate|seconds/i.test(error.message) ? 'ส่งถี่เกินไป รอประมาณ 1 นาทีแล้วลองใหม่' : 'ส่งลิงก์ไม่สำเร็จ ลองใหม่อีกครั้ง'); return; }
+  loginSent = email; render();
+}
+async function startSession(session) {
+  userEmail = session.user.email || '';
+  mode = 'loading'; render();
+  const {data, error} = await sb.from('allowed_users').select('email').limit(1);
+  if (error) { mode = 'error'; render(); return; }
+  if (!data.length) { mode = 'denied'; render(); return; }
+  try { await loadAll(); } catch (e) { mode = 'error'; render(); return; }
+  mode = 'cloud'; subscribeCloud(); render();
+}
+
+/* ---------- excel ---------- */
+function loadScript(src) { return new Promise((ok, bad) => { const t = document.createElement('script'); t.src = src; t.onload = ok; t.onerror = bad; document.head.appendChild(t); }); }
+async function exportExcel() {
+  try { if (!window.XLSX) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); }
+  catch (e) { toast('โหลดตัวสร้างไฟล์ Excel ไม่ได้ เช็กอินเทอร์เน็ตแล้วลองใหม่'); return; }
+  const rn = id => roomById(id)?.no || '';
+  const stName = {occ: 'มีผู้เช่า', vacant: 'ว่าง', fix: 'ปิดซ่อม'};
+  const sheets = {
+    'ห้องพัก': rooms().map(r => ({'ห้อง': r.no, 'ชั้น': r.floor, 'ประเภท': r.type, 'ค่าเช่า': +r.rent || 0, 'สถานะ': stName[roomState(r)], 'ผู้เช่า': tenantOf(r.id)?.name || ''})),
+    'ผู้เช่า': withId('tenants').map(t => ({'ชื่อ': t.name, 'ห้อง': rn(t.roomId), 'เบอร์โทร': t.phone, 'เลขบัตรประชาชน': t.idCard, 'ผู้ติดต่อฉุกเฉิน': [t.emergencyName, t.emergencyPhone].filter(Boolean).join(' '), 'วันเข้าพัก': t.moveIn, 'สิ้นสุดสัญญา': t.contractEnd, 'เงินประกัน': +t.deposit || 0, 'สถานะ': t.status === 'active' ? 'พักอยู่' : 'ย้ายออกแล้ว', 'วันย้ายออก': t.moveOut || '', 'คืนประกัน': t.refund ?? ''})),
+    'บิล': withId('bills').sort((a, b) => (a.month + a.roomNo).localeCompare(b.month + b.roomNo, 'th', {numeric: true})).map(b => ({'เดือน': b.month, 'เลขที่บิล': b.no, 'ห้อง': b.roomNo, 'ผู้เช่า': b.tenantName, 'น้ำ (หน่วย)': b.waterUnits, 'ไฟ (หน่วย)': b.elecUnits, 'ยอดรวม': billTotal(b), 'ครบกำหนด': b.dueDate, 'สถานะ': BILL_PILL[billState(b)][1], 'วันที่จ่าย': b.paidAt || '', 'ช่องทาง': b.method || '', 'ใบเสร็จ': b.receiptNo || ''})),
+    'มิเตอร์': Object.values(S.readings).sort((a, b) => (a.month + rn(a.roomId)).localeCompare(b.month + rn(b.roomId), 'th', {numeric: true})).map(r => ({'เดือน': r.month, 'ห้อง': rn(r.roomId), 'มิเตอร์น้ำ': r.water, 'มิเตอร์ไฟ': r.elec, 'วันที่จด': r.readAt})),
+    'แจ้งซ่อม': withId('repairs').map(r => ({'วันที่แจ้ง': r.reportedAt, 'ห้อง': rn(r.roomId) || 'ส่วนกลาง', 'ปัญหา': r.title, 'รายละเอียด': r.detail, 'สถานะ': {new: 'รอดำเนินการ', doing: 'กำลังซ่อม', done: 'เสร็จแล้ว'}[r.status], 'วันที่เสร็จ': r.doneAt || '', 'ค่าใช้จ่าย': r.cost || ''}))
+  };
+  const wb = XLSX.utils.book_new();
+  for (const [name, rows] of Object.entries(sheets)) { const ws = XLSX.utils.json_to_sheet(rows.length ? rows : [{}]); XLSX.utils.book_append_sheet(wb, ws, name); }
+  XLSX.writeFile(wb, 'dorm-' + todayStr() + '.xlsx');
+}
 
 const VIEW_FN = {dashboard: viewDashboard, rooms: viewRooms, tenants: viewTenants, meters: viewMeters, bills: viewBills, repairs: viewRepairs, settings: viewSettings};
 
 /* ---------- boot ---------- */
 async function boot() {
   render();
-  const c = window.claude;
-  if (c && typeof c.use === 'function') { try { db = await c.use('db'); } catch (e) { db = null; } }
-  if (db) {
-    mode = 'db'; subscribe();
-    try { const u = await c.use('user'); if (u) { const w = await u.can('data.write'); if (w === false) readOnly = true; } } catch (e) {}
-  } else { mode = 'local'; loadLocal(); }
-  render();
+  if (!CFG.supabaseUrl || !CFG.supabaseAnonKey || !window.supabase) { mode = 'local'; loadLocal(); render(); return; }
+  sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: true}});
+  let started = false;
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session && !started) { started = true; setTimeout(() => startSession(session)); }
+    else if (!session) {
+      started = false; userEmail = ''; if (channel) { sb.removeChannel(channel); channel = null; }
+      COLS.forEach(c => S[c] = {}); mode = 'login'; render();
+    }
+  });
+  const {data} = await sb.auth.getSession();
+  if (!data.session && mode === 'loading') { mode = 'login'; render(); }
 }
 boot();
 })();
 </script>
 
-</body></html>
+</body>
+</html>
