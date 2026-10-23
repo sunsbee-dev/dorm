@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>หอพักเต็มสมบัติ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f4bb8'/%3E%3Cg transform='translate(5 5) scale(.92)' fill='none' stroke='white' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 21V5.5A1.5 1.5 0 0 1 6 4h8a1.5 1.5 0 0 1 1.5 1.5V21M15.5 10H18a1.5 1.5 0 0 1 1.5 1.5V21M2.5 21h19M9 21v-2.5a1 1 0 0 1 2 0V21'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
@@ -420,8 +421,44 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
 .acc summary .n,.tab .badge{background:linear-gradient(180deg,var(--coral-a),var(--coral-b));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 6px rgba(194,79,75,.28)}
 .btn{color:var(--ink);letter-spacing:.01em}
 .btn.danger[data-armed]{background:linear-gradient(180deg,#d9506f,#ad2c4e)}
-.brand .mark,.hero-id .logo span{background:linear-gradient(135deg,#2f63d9,#0f2552);box-shadow:0 6px 14px rgba(15,37,82,.35),inset 0 1px 0 rgba(255,255,255,.3)}
+.brand .mark,.hero-id .logo span{color:#fff;background:linear-gradient(135deg,#2f63d9,#0f2552);box-shadow:0 6px 14px rgba(15,37,82,.35),inset 0 1px 0 rgba(255,255,255,.3)}
 
+/* tenant card sits beside the header on wide screens and below the room map on narrower ones */
+.dash-people{display:none}
+@media (max-width:1079px){.hero-people{display:none}.dash-people{display:block}.hero{margin-bottom:14px}}
+/* phone: compact header, smaller room tiles, tighter panels */
+@media (max-width:600px){
+  .hero-id{gap:12px;align-items:flex-start}
+  .hero-id .logo{width:52px;height:52px;border-radius:16px}
+  .hero-id .logo span{width:36px;height:36px;border-radius:11px;font-size:1.1rem}
+  .hero-id > div:last-child{min-width:0;flex:1}
+  .hero-id h2{font-size:1.4rem;gap:6px;flex-wrap:nowrap}
+  .hero-id h2 svg{width:20px;height:20px;flex:none}
+  .hero-id .meta{font-size:.82rem;gap:6px 8px;margin-top:2px}
+  .hero-id .meta i{height:12px;align-self:center}
+  .hero-id .mp{margin-top:10px}
+  .hero-id .monthpick{width:100%;justify-content:space-between}
+  .dash{gap:12px}
+  .panel:not(.rent){padding:16px}
+  .rent .top{padding:18px 16px 20px}
+  .rent .due{padding:18px 16px}
+  .hide-m{display:none}
+  .panel > h3{font-size:1rem;gap:8px;align-items:center}
+  .panel > h3 .btn{white-space:nowrap;flex:none;margin-left:auto}
+  .floor{grid-template-columns:1fr;gap:6px}
+  .floor .fl{padding-top:0}
+  .rooms{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px}
+  .cell{padding:9px 4px;font-size:.9rem;border-radius:12px}
+  .cell .who{font-size:.68rem;margin-top:2px}
+  .cell small{font-size:.62rem}
+  .legend{gap:6px 10px;font-size:.72rem}
+  .people{padding:16px}
+  .people .grid-av{grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:8px}
+}
+
+/* room icon on each room-map tile, tinted by the tile status colour */
+.cell .ric{display:block;width:40px;height:36px;margin:0 auto 6px}
+@media (max-width:600px){.cell .ric{width:30px;height:27px;margin-bottom:4px}}
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
 </style>
 <style>body{margin:0}html,body{height:100%}img{max-width:100%}</style>
@@ -433,7 +470,7 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
 
 <div class="app">
   <aside class="side">
-    <div class="brand"><div class="mark">ต</div><div><h1 id="dormName">หอพักเต็มสมบัติ</h1><div class="sub" id="modeText">กำลังเชื่อมต่อข้อมูล</div></div></div>
+    <div class="brand"><div class="mark"><svg viewBox="0 0 24 24" width="62%" height="62%" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 21V5.5A1.5 1.5 0 0 1 6 4h8a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M15.5 10H18a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M2.5 21h19"/><path d="M8 8h.01M12 8h.01M8 11.5h.01M12 11.5h.01M8 15h.01M12 15h.01" stroke-width="2.4"/><path d="M9 21v-2.5a1 1 0 0 1 2 0V21"/></svg></div><div><h1 id="dormName">หอพักเต็มสมบัติ</h1><div class="sub" id="modeText">กำลังเชื่อมต่อข้อมูล</div></div></div>
     <nav class="tabs" id="tabs"></nav>
     <div class="side-foot" id="sideFoot"></div>
   </aside>
@@ -678,18 +715,21 @@ function viewDashboard() {
   const dueNames = [...new Set(unpaid.map(b => b.tenantName))];
   const acc = (open, icon, tone, title, n, body) => `<details ${open ? 'open' : ''}><summary><span class="ic" style="background:var(--${tone}-soft);color:var(--${tone})">${icon}</span>${title}<span class="n ${n ? '' : 'z'}">${n}</span><span class="chev">${ICON.chev}</span></summary><div class="body list">${body}</div></details>`;
 
+  const peopleCard = cls => `<div class="panel people ${cls}"><header><h3>ผู้เช่า <i></i> <span class="num">${active.length}</span></h3><button class="btn sm" data-act="tenantForm">${ICON.plus} เพิ่มผู้เช่า</button></header>
+      <div class="grid-av">${active.slice(0, 13).map(t => `<span data-act="room" data-id="${t.roomId}" title="${esc(t.name)} · ห้อง ${esc(roomById(t.roomId)?.no || '')}" style="display:contents">${avatar(t.name)}</span>`).join('')}${active.length > 13 ? `<span class="av a1">+${active.length - 13}</span>` : ''}</div>
+      <footer><span>เช่าแล้ว</span><div class="meter"><i style="width:${rate}%"></i></div><b class="num">${occ}/${rs.length} ห้อง</b></footer></div>`;
+
   return `
   <div class="hero">
-    <div class="hero-id"><div class="logo"><span>${esc(initial(st.dormName.replace(/^หอพัก/, '')))}</span></div>
+    <div class="hero-id"><div class="logo"><span><svg viewBox="0 0 24 24" width="62%" height="62%" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 21V5.5A1.5 1.5 0 0 1 6 4h8a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M15.5 10H18a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M2.5 21h19"/><path d="M8 8h.01M12 8h.01M8 11.5h.01M12 11.5h.01M8 15h.01M12 15h.01" stroke-width="2.4"/><path d="M9 21v-2.5a1 1 0 0 1 2 0V21"/></svg></span></div>
       <div><h2>${esc(st.dormName)} ${ICON.verified}</h2><div class="meta"><span>${rs.length} ห้อง</span><i></i><span>เช่าแล้ว ${occ} ห้อง</span><i></i><span>ว่าง ${vac} · ปิดซ่อม ${fix}</span></div>
       <div class="mp">${monthPicker()}</div></div></div>
-    <div class="panel people"><header><h3>ผู้เช่า <i></i> <span class="num">${active.length}</span></h3><button class="btn sm" data-act="tenantForm">${ICON.plus} เพิ่มผู้เช่า</button></header>
-      <div class="grid-av">${active.slice(0, 13).map(t => `<span data-act="room" data-id="${t.roomId}" title="${esc(t.name)} · ห้อง ${esc(roomById(t.roomId)?.no || '')}" style="display:contents">${avatar(t.name)}</span>`).join('')}${active.length > 13 ? `<span class="av a1">+${active.length - 13}</span>` : ''}</div>
-      <footer><span>อัตราเข้าพัก</span><div class="meter"><i style="width:${rate}%"></i></div><b class="num">${rate}%</b></footer></div>
+    ${peopleCard("hero-people")}
   </div>
 
   <div class="dash">
-    <div class="panel span2"><h3>ผังห้อง · สถานะบิล${monthLabel(m)} <button class="btn sm" data-act="go" data-v="rooms">ดูห้องทั้งหมด</button></h3>${roomMap(m)}</div>
+    <div class="panel span2"><h3><span>ผังห้อง<span class="hide-m"> · สถานะบิล${monthLabel(m)}</span></span> <button class="btn sm" data-act="go" data-v="rooms">ดูห้องทั้งหมด</button></h3>${roomMap(m)}</div>
+    ${peopleCard("dash-people")}
     <div class="panel rent">
       <div class="top"><header><h3>ค่าเช่าและค่าน้ำไฟ</h3><span class="pill p-acc">${monthLabel(m, true)}</span></header>
         <div class="cap">ยอดออกบิลเดือนนี้</div><div class="total num">฿ ${baht(billed)}</div>
@@ -741,16 +781,17 @@ function barChart(data, colors, dual) {
   });
   return s + '</svg>';
 }
+const ROOM_ICON = '<svg class="ric" viewBox="0 0 56 50" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="25.5" y="2.5" width="21" height="12" rx="1.5" fill="currentColor" fill-opacity=".1"/><path d="M27.5 14l3.6-6.2 3 4.4 3.6-5.6 6.4 7.4" fill="currentColor" fill-opacity=".35"/><path d="M4 12h9l1.8 10H2.2z" fill="#ffd96a" fill-opacity=".8"/><path d="M8.5 22v21.5"/><rect x="4.5" y="43.5" width="8.5" height="4.5" rx="1.2" fill="currentColor" fill-opacity=".25"/><rect x="23.5" y="19" width="25.5" height="16" rx="4.5" fill="currentColor" fill-opacity=".22"/><path d="M31.7 24.2v1.2M40.7 24.2v1.2M31.7 28.5v1.2M40.7 28.5v1.2" stroke-width="2.8"/><rect x="26.7" y="34.5" width="18.8" height="9" rx="2" fill="currentColor" fill-opacity=".15"/><path d="M26.7 38.8h18.8"/><rect x="20.7" y="29.2" width="6.5" height="14.7" rx="3" fill="currentColor" fill-opacity=".3"/><rect x="45" y="29.2" width="6.5" height="14.7" rx="3" fill="currentColor" fill-opacity=".3"/><path d="M24 44l-.6 3.8M48.2 44l.6 3.8M1.8 48.3h52.4"/></svg>';
 function roomMap(m) {
   const floors = {};
   rooms().forEach(r => { const f = r.floor || '-'; (floors[f] = floors[f] || []).push(r); });
   const keys = Object.keys(floors).sort((a, b) => String(a).localeCompare(String(b), 'th', {numeric: true}));
   const one = keys.length === 1;
-  const cells = keys.map(f => `<div class="floor ${one ? 'solo' : ''}">${one ? '' : `<div class="fl">ชั้น ${esc(f)}</div>`}<div class="rooms">${floors[f].map(r => {
+  const cells = keys.map(f => `<div class="floor ${one ? 'solo' : ''}">${one ? '' : `<div class="fl">${f === '-' ? 'ไม่ระบุชั้น' : 'ชั้น ' + esc(f)}</div>`}<div class="rooms">${floors[f].map(r => {
     const st = roomState(r), tn = tenantOf(r.id); let c = 'vacant', t = 'ว่าง';
     if (st === 'fix') { c = 'fix'; t = 'ปิดซ่อม'; }
     else if (st === 'occ') { const b = billOf(r.id, m); if (!b) { c = 'nobill'; t = 'ยังไม่ออกบิล'; } else { c = billState(b); t = BILL_PILL[c][1]; } }
-    return `<button class="cell c-${c}" data-act="room" data-id="${r.id}">${esc(r.no)}<span class="who">${tn ? esc(tn.name) : '&nbsp;'}</span><small>${t}</small></button>`;
+    return `<button class="cell c-${c}" data-act="room" data-id="${r.id}">${ROOM_ICON}${esc(r.no)}<span class="who">${tn ? esc(tn.name) : '&nbsp;'}</span><small>${t}</small></button>`;
   }).join('')}</div></div>`).join('');
   return `<div class="floors">${cells}</div><div class="legend"><span><i class="c-paid"></i>จ่ายแล้ว</span><span><i class="c-unpaid"></i>รอชำระ</span><span><i class="c-overdue"></i>เลยกำหนด</span><span><i class="c-nobill"></i>ยังไม่ออกบิล</span><span><i class="c-vacant"></i>ว่าง</span><span><i class="c-fix"></i>ปิดซ่อม</span></div>`;
 }
