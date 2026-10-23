@@ -482,6 +482,9 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
   .cell .who{font-size:.5rem;margin-top:1px;padding:0 2px}
   .cell small{font-size:.5rem;margin-top:1px}
 }
+/* month picker: flat and plain, no glass shine */
+.monthpick{background:var(--surface);border:1px solid var(--line);box-shadow:none}
+.monthpick button:hover{background:var(--surface-2);box-shadow:none}
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
 </style>
 <style>body{margin:0}html,body{height:100%}img{max-width:100%}</style>
