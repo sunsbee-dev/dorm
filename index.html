@@ -612,6 +612,10 @@ const rooms = () => withId('rooms').sort((a, b) => String(a.no).localeCompare(St
 const roomById = id => S.rooms[id] ? {id, ...S.rooms[id]} : null;
 const tenantOf = roomId => withId('tenants').find(t => t.roomId === roomId && t.status === 'active') || null;
 const roomState = r => r.maintenance ? 'fix' : (tenantOf(r.id) ? 'occ' : 'vacant');
+// who lived in a room during month m (YYYY-MM), from move-in and move-out dates, so the month picker shows that month's occupancy
+const livedIn = (t, m) => (!t.moveIn || t.moveIn <= m + '-31') && (t.status === 'active' ? (!t.moveOutPlanned || t.moveOutPlanned >= m + '-01') : !!t.moveOut && t.moveOut >= m + '-01');
+const tenantIn = (roomId, m) => withId('tenants').filter(t => t.roomId === roomId && livedIn(t, m)).sort((a, b) => (b.status === 'active') - (a.status === 'active') || String(b.moveIn || '').localeCompare(String(a.moveIn || '')))[0] || null;
+const roomStateIn = (r, m) => r.maintenance && m >= thisMonth() ? 'fix' : (tenantIn(r.id, m) ? 'occ' : 'vacant');
 const readingOf = (roomId, m) => S.readings[roomId + '_' + m];
 function prevReading(room, m) {
   let best = null;
@@ -719,17 +723,17 @@ function roomArt(state, seed) {
 /* ---------- dashboard ---------- */
 function viewDashboard() {
   const m = ui.month, rs = rooms(), today = todayStr(), st = settings();
-  const occ = rs.filter(r => roomState(r) === 'occ').length, vac = rs.filter(r => roomState(r) === 'vacant').length, fix = rs.filter(r => roomState(r) === 'fix').length;
+  const occ = rs.filter(r => roomStateIn(r, m) === 'occ').length, vac = rs.filter(r => roomStateIn(r, m) === 'vacant').length, fix = rs.filter(r => roomStateIn(r, m) === 'fix').length;
   const rate = rs.length ? Math.round(occ / rs.length * 100) : 0;
   const mb = withId('bills').filter(b => b.month === m);
   const billed = mb.reduce((s, b) => s + billTotal(b), 0), got = mb.filter(b => b.status === 'paid').reduce((s, b) => s + billTotal(b), 0);
   const unpaid = withId('bills').filter(b => b.status !== 'paid').sort((a, b) => a.dueDate.localeCompare(b.dueDate));
   const overdue = unpaid.filter(b => billState(b) === 'overdue');
-  const noReading = rs.filter(r => roomState(r) === 'occ' && !readingOf(r.id, m));
+  const noReading = rs.filter(r => roomStateIn(r, m) === 'occ' && !readingOf(r.id, m));
   const repairs = withId('repairs').filter(r => r.status !== 'done').sort((a, b) => (a.reportedAt || '').localeCompare(b.reportedAt || ''));
   const ending = withId('tenants').filter(t => t.status === 'active' && t.contractEnd && daysBetween(today, t.contractEnd) <= 30).sort((a, b) => a.contractEnd.localeCompare(b.contractEnd));
   const moving = withId('tenants').filter(t => t.status === 'active' && t.moveOutPlanned && !ending.includes(t));
-  const active = withId('tenants').filter(t => t.status === 'active').sort((a, b) => String(roomById(a.roomId)?.no || '').localeCompare(String(roomById(b.roomId)?.no || ''), 'th', {numeric: true}));
+  const active = withId('tenants').filter(t => livedIn(t, m) && rs.some(r => r.id === t.roomId)).sort((a, b) => String(roomById(a.roomId)?.no || '').localeCompare(String(roomById(b.roomId)?.no || ''), 'th', {numeric: true}));
 
   const hist = [...Array(6)].map((_, i) => addMonths(m, i - 5));
   const incomeData = hist.map(h => { const bs = withId('bills').filter(b => b.month === h); return {label: monthLabel(h, true), v: [bs.reduce((s, b) => s + billTotal(b), 0), bs.filter(b => b.status === 'paid').reduce((s, b) => s + billTotal(b), 0)]}; });
@@ -822,7 +826,7 @@ function roomMap(m) {
   const keys = Object.keys(floors).sort((a, b) => String(a).localeCompare(String(b), 'th', {numeric: true}));
   const one = keys.length === 1;
   const cells = keys.map(f => `<div class="floor ${one ? 'solo' : ''}">${one ? '' : `<div class="fl">${f === '-' ? 'ไม่ระบุชั้น' : 'ชั้น ' + esc(f)}</div>`}<div class="rooms">${floors[f].map(r => {
-    const st = roomState(r), tn = tenantOf(r.id); let c = 'vacant', t = 'ว่าง';
+    const st = roomStateIn(r, m), tn = tenantIn(r.id, m); let c = 'vacant', t = 'ว่าง';
     if (st === 'fix') { c = 'fix'; t = 'ปิดซ่อม'; }
     else if (st === 'occ') { const b = billOf(r.id, m); if (!b) { c = 'nobill'; t = 'ยังไม่ออกบิล'; } else { c = billState(b); t = BILL_PILL[c][1]; } }
     return `<button class="cell c-${c}" data-act="room" data-id="${r.id}">${ROOM_ICON}${esc(r.no)}<span class="who">${tn ? esc(firstName(tn.name)) : '&nbsp;'}</span><small>${t}</small></button>`;
