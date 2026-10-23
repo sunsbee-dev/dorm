@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>หอพักเต็มสมบัติ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f4bb8'/%3E%3Cg transform='translate(5 5) scale(.92)' fill='none' stroke='white' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 21V5.5A1.5 1.5 0 0 1 6 4h8a1.5 1.5 0 0 1 1.5 1.5V21M15.5 10H18a1.5 1.5 0 0 1 1.5 1.5V21M2.5 21h19M9 21v-2.5a1 1 0 0 1 2 0V21'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
@@ -420,7 +421,7 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
 .acc summary .n,.tab .badge{background:linear-gradient(180deg,var(--coral-a),var(--coral-b));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 6px rgba(194,79,75,.28)}
 .btn{color:var(--ink);letter-spacing:.01em}
 .btn.danger[data-armed]{background:linear-gradient(180deg,#d9506f,#ad2c4e)}
-.brand .mark,.hero-id .logo span{background:linear-gradient(135deg,#2f63d9,#0f2552);box-shadow:0 6px 14px rgba(15,37,82,.35),inset 0 1px 0 rgba(255,255,255,.3)}
+.brand .mark,.hero-id .logo span{color:#fff;background:linear-gradient(135deg,#2f63d9,#0f2552);box-shadow:0 6px 14px rgba(15,37,82,.35),inset 0 1px 0 rgba(255,255,255,.3)}
 
 /* tenant card sits beside the header on wide screens and below the room map on narrower ones */
 .dash-people{display:none}
@@ -466,7 +467,7 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
 
 <div class="app">
   <aside class="side">
-    <div class="brand"><div class="mark">ต</div><div><h1 id="dormName">หอพักเต็มสมบัติ</h1><div class="sub" id="modeText">กำลังเชื่อมต่อข้อมูล</div></div></div>
+    <div class="brand"><div class="mark"><svg viewBox="0 0 24 24" width="62%" height="62%" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 21V5.5A1.5 1.5 0 0 1 6 4h8a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M15.5 10H18a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M2.5 21h19"/><path d="M8 8h.01M12 8h.01M8 11.5h.01M12 11.5h.01M8 15h.01M12 15h.01" stroke-width="2.4"/><path d="M9 21v-2.5a1 1 0 0 1 2 0V21"/></svg></div><div><h1 id="dormName">หอพักเต็มสมบัติ</h1><div class="sub" id="modeText">กำลังเชื่อมต่อข้อมูล</div></div></div>
     <nav class="tabs" id="tabs"></nav>
     <div class="side-foot" id="sideFoot"></div>
   </aside>
@@ -717,7 +718,7 @@ function viewDashboard() {
 
   return `
   <div class="hero">
-    <div class="hero-id"><div class="logo"><span>${esc(initial(st.dormName.replace(/^หอพัก/, '')))}</span></div>
+    <div class="hero-id"><div class="logo"><span><svg viewBox="0 0 24 24" width="62%" height="62%" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 21V5.5A1.5 1.5 0 0 1 6 4h8a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M15.5 10H18a1.5 1.5 0 0 1 1.5 1.5V21"/><path d="M2.5 21h19"/><path d="M8 8h.01M12 8h.01M8 11.5h.01M12 11.5h.01M8 15h.01M12 15h.01" stroke-width="2.4"/><path d="M9 21v-2.5a1 1 0 0 1 2 0V21"/></svg></span></div>
       <div><h2>${esc(st.dormName)} ${ICON.verified}</h2><div class="meta"><span>${rs.length} ห้อง</span><i></i><span>เช่าแล้ว ${occ} ห้อง</span><i></i><span>ว่าง ${vac} · ปิดซ่อม ${fix}</span></div>
       <div class="mp">${monthPicker()}</div></div></div>
     ${peopleCard("hero-people")}
