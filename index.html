@@ -474,13 +474,13 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
 .people footer .meter{background:rgba(255,255,255,.22)}
 .people footer .meter i{background:linear-gradient(90deg,#fff,#cfe0ff)}
 @media (max-width:600px){.people .pp-art{width:104px;bottom:46px}.people .grid-av{padding-right:100px;min-height:80px}}
-/* phone: compact room-map tiles, six to a row */
+/* phone: compact room-map tiles, eight to a row */
 @media (max-width:600px){
-  .rooms{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
-  .cell{padding:6px 1px 5px;font-size:.68rem;border-radius:9px;letter-spacing:-.01em}
-  .cell .ric{width:20px;height:18px;margin-bottom:2px}
-  .cell .who{font-size:.5rem;margin-top:1px;padding:0 2px}
-  .cell small{font-size:.5rem;margin-top:1px}
+  .rooms{grid-template-columns:repeat(8,minmax(0,1fr));gap:3px}
+  .cell{padding:4px 1px 4px;font-size:.62rem;border-radius:7px;letter-spacing:-.01em}
+  .cell .ric{width:15px;height:13px;margin-bottom:1px}
+  .cell .who{font-size:.46rem;margin-top:1px;padding:0 1px}
+  .cell small{font-size:.46rem;margin-top:1px}
 }
 /* month picker: flat and plain, no glass shine */
 .monthpick{background:var(--surface);border:1px solid var(--line);box-shadow:none}
