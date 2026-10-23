@@ -901,7 +901,7 @@ function viewMeters() {
     return `<tr data-room="${r.id}"><td>${tag(r.no)}</td><td>${esc(tenantOf(r.id)?.name || '-')}</td>
     <td class="r num muted">${baht(p.water)}</td><td class="r"><input id="mw-${r.id}" data-meter="water" type="number" min="0" step="any" inputmode="decimal" value="${cur ? esc(cur.water) : ''}" ${lock ? 'disabled' : ''} aria-label="มิเตอร์น้ำห้อง ${esc(r.no)}"></td><td class="r num">${u ? baht(u.w) : '-'}</td>
     <td class="r num muted">${baht(p.elec)}</td><td class="r"><input id="me-${r.id}" data-meter="elec" type="number" min="0" step="any" inputmode="decimal" value="${cur ? esc(cur.elec) : ''}" ${lock ? 'disabled' : ''} aria-label="มิเตอร์ไฟห้อง ${esc(r.no)}"></td><td class="r num">${u ? baht(u.e) : '-'}</td>
-    <td>${b ? `<button class="btn sm" data-act="bill" data-id="${b.id}">ออกบิลแล้ว</button>` : neg ? '<span class="warnText">เลขน้อยกว่าครั้งก่อน</span>' : cur ? '<span class="pill p-ok">จดแล้ว</span>' : '<span class="pill p-acc">รอจด</span>'}</td></tr>`;
+    <td>${b ? `<button class="btn sm" data-act="bill" data-id="${b.id}">ออกบิลแล้ว</button>` : `<div class="row" style="flex-wrap:nowrap">${neg ? '<span class="warnText">เลขน้อยกว่าครั้งก่อน</span>' : cur ? '<span class="pill p-ok">จดแล้ว</span>' : '<span class="pill p-acc">รอจด</span>'}${cur ? `<button class="btn sm danger" data-act="readingDelete" data-id="${esc(r.id + '_' + m)}" data-confirm="1" aria-label="ลบเลขมิเตอร์ห้อง ${esc(r.no)}">ลบ</button>` : ''}</div>`}</td></tr>`;
   }).join('')}</tbody></table></div><p class="small muted">พิมพ์เลขมิเตอร์แล้วกด Tab หรือแตะช่องอื่น ระบบจะบันทึกเองเมื่อกรอกครบทั้งน้ำและไฟ ห้องที่ออกบิลแล้วจะแก้เลขไม่ได้ ถ้าต้องแก้ให้ลบบิลนั้นก่อน</p>`
   : '<div class="panel empty">ยังไม่มีห้องที่มีผู้เช่า</div>'}`;
 }
@@ -1156,7 +1156,10 @@ document.addEventListener('click', async ev => {
     case 'close': closeModal(); break;
     case 'roomForm': roomForm(id); break;
     case 'roomSave': roomSave(id); break;
-    case 'roomDelete': closeModal(); if (await remove('rooms', id)) { toast('ลบห้องแล้ว'); if (ui.view === 'room') { ui.view = 'rooms'; render(); } } break;
+    case 'roomDelete': closeModal(); if (await remove('rooms', id)) {
+      for (const [rid, rd] of Object.entries(S.readings)) if (rd.roomId === id && !S.bills[rid]) await remove('readings', rid);
+      toast('ลบห้องแล้ว'); if (ui.view === 'room') { ui.view = 'rooms'; render(); } } break;
+    case 'readingDelete': if (await remove('readings', id)) toast('ลบเลขมิเตอร์แล้ว'); break;
     case 'roomInfo': case 'room': openRoom(id); break;
     case 'bulkForm': bulkForm(); break;
     case 'bulkSave': el.disabled = true; await bulkSave(); break;
