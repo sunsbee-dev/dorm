@@ -6,32 +6,38 @@
 <title>หอพักเต็มสมบัติ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
 <style>
-/* Palette: clean warm white with brown and golden-yellow accents. Layout: side nav on desktop, scrolling tab strip on phone */
+/* Palette: lavender white with indigo, magenta and coral accents inside a pastel gradient frame. Layout: side nav on desktop, scrolling tab strip on phone */
 :root{
-  --bg:#f7f6f3; --surface:#ffffff; --surface-2:#f4f2ee; --ink:#1d1b18; --muted:#6f6a63; --line:#ebe8e2;
-  --accent:#8b5a24; --accent-ink:#ffffff; --accent-soft:#f8f0e4; --gold:#f2b81d; --gold-ink:#2b1d07;
-  --ok:#17804a; --ok-soft:#e5f5ec; --warn:#a15c00; --warn-soft:#fdf2df; --bad:#c2321f; --bad-soft:#fdecea;
-  --idle:#8d8880; --idle-soft:#f1efeb; --fix:#5b4bc4; --fix-soft:#efedfc;
-  --water:#2f7fd0; --elec:#e0a000;
-  --f-display:"Anuphan","IBM Plex Sans Thai",system-ui,sans-serif;
+  --bg:#f7f7fd; --surface:#ffffff; --surface-2:#f3f3fb; --ink:#1b1c3a; --muted:#7a7c98; --line:#ebebf5;
+  --accent:#4046d6; --accent-ink:#ffffff; --accent-soft:#ececfd; --gold:#4046d6; --gold-ink:#ffffff;
+  --navy:#3b3fce; --navy-2:#2c30b0; --navy-ink:#f2f2ff; --lime:#b24ec6; --coral:#ef7672; --magenta:#b24ec6; --magenta-soft:#f6e9fa;
+  --frame:linear-gradient(120deg,#c9dcf7 0%,#d9c8f3 38%,#efc6dd 70%,#f6d6c4 100%);
+  --ok:#2fae55; --ok-soft:#e4f6ea; --warn:#dd7b2c; --warn-soft:#fdf1e6; --bad:#e0466a; --bad-soft:#fdeaf0;
+  --idle:#8b95a1; --idle-soft:#eef1f4; --fix:#6a5bd8; --fix-soft:#efedfd;
+  --water:#4046d6; --elec:#b24ec6;
+  --f-display:"Prompt","IBM Plex Sans Thai",system-ui,sans-serif;
   --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"IBM Plex Sans Thai",system-ui,sans-serif;
-  --r:14px; --shadow:0 1px 2px rgba(20,16,10,.04),0 1px 1px rgba(20,16,10,.02);
+  --f-mono:"Prompt","IBM Plex Sans Thai",system-ui,sans-serif;
+  --r:20px; --shadow:0 1px 2px rgba(19,32,46,.04),0 8px 24px rgba(19,32,46,.05);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#131211; --surface:#1c1b19; --surface-2:#242220; --ink:#f3f1ed; --muted:#a8a29a; --line:#2e2c29;
-  --accent:#e2ad62; --accent-ink:#1f1406; --accent-soft:#2f2518; --gold:#f2c14e; --gold-ink:#1f1406;
-  --ok:#5bcf8a; --ok-soft:#14291d; --warn:#f0b14a; --warn-soft:#30240f; --bad:#ff8b7c; --bad-soft:#361a16;
-  --idle:#8d8880; --idle-soft:#26241f; --fix:#ab9eff; --fix-soft:#232042;
-  --water:#6fb1ef; --elec:#f2c046; color-scheme:dark}}
+  --bg:#11122a; --surface:#1a1c3a; --surface-2:#222547; --ink:#eeeefc; --muted:#a3a5c4; --line:#2d3058;
+  --accent:#8f94ff; --accent-ink:#0e1040; --accent-soft:#272a5e; --gold:#8f94ff; --gold-ink:#0e1040;
+  --navy:#3b3fce; --navy-2:#2c30b0; --navy-ink:#f2f2ff; --lime:#d27be3; --coral:#f48a86; --magenta:#d27be3; --magenta-soft:#3a2148;
+  --frame:linear-gradient(120deg,#1b2350 0%,#2a1e4f 45%,#3a1d3c 100%);
+  --ok:#5fd488; --ok-soft:#163a26; --warn:#f3a160; --warn-soft:#3a2614; --bad:#ff8396; --bad-soft:#3d1a22;
+  --idle:#8b95a1; --idle-soft:#1d2b3a; --fix:#aca0ff; --fix-soft:#25224a;
+  --water:#8f94ff; --elec:#d27be3; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#131211; --surface:#1c1b19; --surface-2:#242220; --ink:#f3f1ed; --muted:#a8a29a; --line:#2e2c29;
-  --accent:#e2ad62; --accent-ink:#1f1406; --accent-soft:#2f2518; --gold:#f2c14e; --gold-ink:#1f1406;
-  --ok:#5bcf8a; --ok-soft:#14291d; --warn:#f0b14a; --warn-soft:#30240f; --bad:#ff8b7c; --bad-soft:#361a16;
-  --idle:#8d8880; --idle-soft:#26241f; --fix:#ab9eff; --fix-soft:#232042;
-  --water:#6fb1ef; --elec:#f2c046; color-scheme:dark}
+  --bg:#11122a; --surface:#1a1c3a; --surface-2:#222547; --ink:#eeeefc; --muted:#a3a5c4; --line:#2d3058;
+  --accent:#8f94ff; --accent-ink:#0e1040; --accent-soft:#272a5e; --gold:#8f94ff; --gold-ink:#0e1040;
+  --navy:#3b3fce; --navy-2:#2c30b0; --navy-ink:#f2f2ff; --lime:#d27be3; --coral:#f48a86; --magenta:#d27be3; --magenta-soft:#3a2148;
+  --frame:linear-gradient(120deg,#1b2350 0%,#2a1e4f 45%,#3a1d3c 100%);
+  --ok:#5fd488; --ok-soft:#163a26; --warn:#f3a160; --warn-soft:#3a2614; --bad:#ff8396; --bad-soft:#3d1a22;
+  --idle:#8b95a1; --idle-soft:#1d2b3a; --fix:#aca0ff; --fix-soft:#25224a;
+  --water:#8f94ff; --elec:#d27be3; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{background:var(--bg);color:var(--ink)}
@@ -172,6 +178,205 @@ pre.copy{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(-
 .linkbtn{border:0;background:none;color:var(--accent);cursor:pointer;padding:4px 0;text-align:left;text-decoration:underline;text-underline-offset:3px}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 .app.locked .side nav,.app.locked .side-foot{display:none!important}
+/* ---------- redesign layer ---------- */
+h2{font-size:1.55rem;font-weight:600;letter-spacing:-.01em}
+h3{font-family:var(--f-display);font-weight:600;font-size:1.02rem}
+.side{background:var(--surface)}
+.brand .mark{background:var(--accent);color:var(--accent-ink);border-radius:12px;width:36px;height:36px;font-size:1.05rem;box-shadow:0 6px 14px rgba(64,70,214,.3)}
+.brand h1{font-size:1.08rem;font-weight:600}
+.tab{border-radius:12px;font-weight:500}
+.tab[aria-current="page"]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.tab .badge{background:var(--coral);font-family:var(--f-display);font-weight:600;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 6px;font-size:.72rem}
+@media (min-width:900px){.side{border-right:0;box-shadow:1px 0 0 var(--line)} main{padding-inline:36px;padding-block:28px 64px}}
+.btn{border-radius:12px;font-family:var(--f-display);font-weight:500;box-shadow:none;border-color:var(--line)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 6px 16px rgba(64,70,214,.28)}
+.btn.primary:hover{color:var(--accent-ink)}
+.btn.ghost{background:transparent}
+.btn.white{background:#fff;color:var(--accent);border-color:#fff;font-weight:600;border-radius:99px;padding:8px 18px}
+.monthpick{border-radius:99px;box-shadow:none;padding:3px}
+.monthpick button{border-radius:99px}
+.monthpick span{font-family:var(--f-display);font-weight:500}
+.panel,.stat,.tablewrap,.card{border:0;box-shadow:var(--shadow);border-radius:var(--r)}
+.panel{padding:22px}
+.banner{border-radius:16px}
+.banner.info{background:var(--accent-soft)}
+.tag{background:var(--surface-2);border-radius:10px;font-family:var(--f-display);font-weight:500}
+.pill{font-weight:500;padding:3px 10px 3px 8px;display:inline-flex;align-items:center;gap:6px;border-radius:8px}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip{border-radius:99px;font-family:var(--f-display)}
+.chip[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+th{background:transparent;font-family:var(--f-display);font-weight:500;font-size:.8rem;padding-block:14px}
+th,td{padding-inline:16px;border-color:var(--line)}
+td{padding-block:14px}
+tbody tr:hover{background:var(--surface-2)}
+.stat .v{font-family:var(--f-display);font-weight:600}
+.meter{height:8px;background:var(--surface-2)}
+.meter i{background:var(--accent);border-radius:9px}
+.card{padding:18px}
+.col{background:transparent;border:0;padding:0}
+.col > h3{padding:0 4px}
+.modal .box{border-radius:22px}
+.fld input,.fld select,.fld textarea{border-radius:12px}
+.toast{border-radius:99px;background:var(--navy);color:var(--navy-ink)}
+.cell{border-radius:16px;font-family:var(--f-display);font-weight:600}
+.c-paid{background:var(--ok-soft);color:var(--ok)} .c-unpaid{background:var(--warn-soft);color:var(--warn)}
+.c-overdue{background:var(--bad-soft);color:var(--bad)} .c-nobill{background:#e9f0f7;color:#3d6a92}
+.c-vacant{background:var(--surface-2);color:var(--muted)} .c-fix{background:var(--fix-soft);color:var(--fix)}
+
+/* avatars */
+.av{width:40px;height:40px;border-radius:12px;display:inline-grid;place-items:center;font-family:var(--f-display);font-weight:600;font-size:.95rem;flex:none}
+.av.sm{width:30px;height:30px;border-radius:10px;font-size:.8rem}
+.av.a0{background:#fbe4ec;color:#b8365f}.av.a1{background:#e8ecf1;color:#4b5866}.av.a2{background:#fde4d4;color:#b2541c}
+.av.a3{background:#dff3e5;color:#23803f}.av.a4{background:#e2edf9;color:#2f6aa6}.av.a5{background:#f3e5fb;color:#8340a8}
+.avstack{display:flex}.avstack .av{border:3px solid var(--navy);margin-left:-10px;border-radius:50%}.avstack .av:first-child{margin-left:0}
+.avstack .more{background:#fff;color:var(--navy)}
+.avstack .av{border-color:var(--navy)}
+
+/* dashboard hero (from the HRM header) */
+.hero{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:18px;align-items:stretch}
+.hero-photo{position:relative;border-radius:var(--r);overflow:hidden;min-height:280px;box-shadow:var(--shadow);background:var(--navy)}
+.hero-photo img{position:absolute;inset:0;width:100%;height:100%;max-width:100%;object-fit:cover;object-position:50% 62%}
+.hero-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(19,32,46,0) 35%,rgba(19,32,46,.82) 100%)}
+.hero-photo .cap{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:22px 24px;display:flex;gap:16px;align-items:center;color:#fff}
+.hero-photo .logo{width:56px;height:56px;border-radius:16px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:1.5rem;flex:none;box-shadow:0 0 0 4px rgba(255,255,255,.9)}
+.hero-photo h2{font-size:1.8rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.hero-photo .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:2px;color:rgba(255,255,255,.88)}
+.hero-photo .meta i{width:1px;background:rgba(255,255,255,.4)}
+.hero-photo .mp{position:absolute;top:16px;right:16px;z-index:1}
+.hero-photo .monthpick{background:rgba(255,255,255,.92);border-color:transparent;color:#14202b}
+.hero-photo .monthpick button{color:#4b5866}
+@media (max-width:600px){.hero-photo{min-height:240px}.hero-photo h2{font-size:1.35rem}.hero-photo .cap{padding:16px}.hero-photo .logo{width:44px;height:44px;font-size:1.2rem}.hero-photo .mp{top:12px;right:12px;left:12px;display:flex;justify-content:flex-end}}
+@media (min-width:1080px){.hero{grid-template-columns:1fr 400px}}
+.hero-id{display:flex;gap:18px;align-items:center;padding:6px 0}
+.hero-id .logo{width:76px;height:76px;border-radius:22px;background:var(--surface);box-shadow:var(--shadow);display:grid;place-items:center;flex:none}
+.hero-id .logo span{width:50px;height:50px;border-radius:14px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:1.5rem}
+.hero-id h2{font-size:1.9rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hero-id .meta{color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.hero-id .meta i{width:1px;background:var(--line)}
+.hero-id .mp{margin-top:10px}
+.people{padding:20px 22px}
+.people header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.people header h3{font-size:1.25rem;display:flex;gap:12px;align-items:center}
+.people header h3 i{width:1px;height:18px;background:var(--line)}
+.people .grid-av{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:10px}
+.people .grid-av .av{width:100%;aspect-ratio:1;height:auto;border-radius:14px;cursor:pointer}
+.people footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;color:var(--muted);font-size:.9rem;gap:12px}
+.people footer .meter{flex:1;max-width:160px;margin:0}
+
+/* dashboard body */
+.dash{display:grid;gap:16px;grid-template-columns:1fr}
+@media (min-width:1080px){.dash{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.rent{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.rent .top{padding:22px 24px 26px}
+.rent .top header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.rent .cap{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.rent .total{font-family:var(--f-display);font-size:1.6rem;font-weight:600}
+.splitbar{display:flex;gap:6px;height:14px;margin:18px 0 12px}
+.splitbar i{display:block;border-radius:99px;min-width:6px}
+.splitbar .g{background:var(--ok)}.splitbar .r{background:var(--coral)}
+.rent .two{display:flex;justify-content:space-between;gap:12px}
+.rent .two div:last-child{text-align:right}
+.rent .two .l{font-size:.85rem}.rent .two .ok{color:var(--ok)}.rent .two .bd{color:var(--coral)}
+.rent .two b{display:block;font-family:var(--f-display);font-size:1.3rem;font-weight:600}
+.rent .due{background:var(--navy);color:var(--navy-ink);padding:22px 24px;border-radius:var(--r) var(--r) 0 0;margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.rent .due .lbl{font-size:.9rem;opacity:.75;margin-bottom:10px}
+.brk{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
+.brk .cap{margin-bottom:6px}
+.bk{display:grid;grid-template-columns:10px 1fr auto;gap:4px 10px;align-items:center;padding:8px 0}
+.bk > i{width:10px;height:10px;border-radius:3px}
+.bk b{font-family:var(--f-display);font-weight:500}
+.bk .bb{grid-column:2/-1;height:6px;border-radius:9px;background:var(--surface-2);overflow:hidden}
+.bk .bb s{display:block;height:100%;border-radius:9px}
+.promo{background:var(--coral);color:#fff;border-radius:var(--r);padding:20px 22px;display:flex;align-items:center;gap:16px;overflow:hidden;position:relative;min-height:150px}
+.promo svg{width:150px;flex:none;margin:-10px 0 -24px -6px}
+.promo h3{font-size:1.15rem;color:#fff;margin-bottom:4px}
+.promo p{margin:0 0 12px;opacity:.9;font-size:.92rem}
+.acc{display:flex;flex-direction:column;gap:10px}
+.acc details{background:var(--surface);border-radius:18px;box-shadow:var(--shadow)}
+.acc summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:16px 18px;font-family:var(--f-display);font-weight:500}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary .n{margin-left:auto;background:var(--coral);color:#fff;min-width:26px;height:26px;border-radius:99px;display:grid;place-items:center;font-size:.8rem;font-weight:600;padding:0 7px}
+.acc summary .n.z{background:var(--surface-2);color:var(--muted)}
+.acc summary .chev{width:30px;height:30px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;transition:transform .2s;color:var(--muted)}
+.acc details[open] .chev{transform:rotate(180deg)}
+.acc summary .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:none}
+.acc .body{padding:0 18px 12px}
+.span2{grid-column:1/-1}
+
+/* rooms page: unit cards */
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:16px}
+.unit{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;display:grid;grid-template-columns:132px 1fr;gap:16px;cursor:pointer;text-align:left;border:2px solid transparent;transition:transform .15s,border-color .15s;width:100%}
+.unit:hover{transform:translateY(-2px);border-color:var(--accent-soft)}
+.unit .pic{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:1}
+.unit .pic > svg{width:100%;height:100%;display:block}
+.unit .badge svg{flex:none}
+.unit .badge{position:absolute;left:8px;top:8px;right:8px;background:var(--accent);color:#fff;font-size:.68rem;font-weight:600;letter-spacing:.03em;border-radius:8px;padding:3px 7px;display:flex;gap:5px;align-items:center}
+.unit .badge.vacant{background:#fff;color:var(--muted)}.unit .badge.fix{background:var(--fix);color:#fff}
+.unit .no{font-family:var(--f-display);font-size:1.05rem;letter-spacing:.04em}
+.unit .lbl{color:var(--muted);font-size:.85rem;margin-top:6px}
+.unit .amt{font-family:var(--f-display);font-weight:600;font-size:1.6rem;line-height:1.15}
+.unit .icons{display:flex;gap:14px;margin-top:8px;color:var(--muted);font-size:.85rem;align-items:center;flex-wrap:wrap}
+.unit .icons span{display:flex;gap:5px;align-items:center}
+.unit .dates{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.unit .dates small{display:block;font-size:.68rem;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.unit .dates b{font-weight:500;font-size:.9rem}
+.unit .who{color:var(--ink);font-weight:500;font-size:.9rem;margin-top:2px}
+
+/* bills page (HRM table) */
+.toolbar{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px 14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar h2{font-size:1.35rem;margin-right:6px}
+.seg{display:flex;background:var(--surface-2);border-radius:14px;padding:4px;gap:2px}
+.seg button{border:0;background:none;padding:7px 18px;border-radius:10px;cursor:pointer;font-family:var(--f-display);color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(19,32,46,.12)}
+.toolbar .sp{flex:1}
+.sumrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.htable td .two b{display:block;font-weight:500}
+.htable td .two span{color:var(--muted);font-size:.85rem}
+.htable .who{display:flex;gap:10px;align-items:center}
+.htable input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.htable .lnk{border:0;background:none;cursor:pointer;font-family:var(--f-display);font-weight:500;color:var(--ink)}
+.htable .lnk:hover{color:var(--accent)}
+.htable tr.open > td{background:var(--surface-2)}
+.htable tr.xp > td{background:var(--surface-2);padding:22px 28px 26px;white-space:normal}
+.xgrid{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:0}
+.xgrid > div{padding:0 22px;border-left:1px solid var(--line)}
+.xgrid > div:first-child{padding-left:0;border-left:0}
+.xgrid h4{margin:0 0 18px;font-family:var(--f-display);font-weight:600;font-size:1.3rem;display:flex;gap:10px;align-items:center}
+.xgrid .pct{font-family:var(--f-display);font-size:1.3rem;font-weight:500}
+.xgrid .sub{color:var(--muted);font-size:.88rem;margin-bottom:14px}
+.xbar{height:26px;border-radius:8px}
+.xbar.lime{background:var(--lime)}.xbar.org{background:var(--coral)}.xbar.blue{background:var(--water)}
+.xbar.hatch{background:repeating-linear-gradient(90deg,var(--muted) 0 1.5px,transparent 1.5px 12px);opacity:.6}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+.vs .mid{font-family:var(--f-display);font-weight:600;color:var(--muted)}
+.vs div:last-child{text-align:right}
+.vsbar{display:flex;gap:6px;margin-top:14px}.vsbar i{height:26px;border-radius:8px;display:block}
+@media (max-width:820px){.xgrid{grid-template-columns:1fr 1fr;gap:20px}.xgrid > div{border-left:0;padding:0}.xgrid > div:first-child{grid-column:1/-1}}
+.xact{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+
+/* tenant cards */
+.card .top .id{display:flex;gap:12px;align-items:center}
+
+/* pastel frame + faint dorm photo */
+html{background:var(--bg)} body{background:var(--frame);min-height:100%}
+@media (min-width:900px){
+  body{padding:14px}
+  .app{background:var(--bg);border-radius:26px;min-height:calc(100vh - 28px);overflow:clip;box-shadow:0 20px 60px rgba(60,50,120,.18)}
+  .side{height:calc(100vh - 28px);top:14px;border-radius:26px 0 0 26px}
+}
+@media (max-width:899px){.app{background:var(--bg)}}
+main{position:relative;isolation:isolate}
+main::before{content:"";position:absolute;left:0;right:0;top:0;aspect-ratio:2.97;min-height:380px;max-height:600px;z-index:-1;pointer-events:none;
+  background:url("dorm-building-bg.jpg") 50% 0%/cover no-repeat;opacity:.24;filter:saturate(.8);
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 55%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 55%,transparent 100%)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) main::before{opacity:.12}}
+:root[data-theme="dark"] main::before{opacity:.12}
+.banner.info{background:rgba(236,236,253,.85)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .banner.info{background:var(--accent-soft)}}
+.c-nobill{background:var(--magenta-soft);color:var(--magenta)} .legend i.c-nobill{background:var(--magenta-soft)}
+.tab[aria-current="page"]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
 </style>
 <style>body{margin:0}html,body{height:100%}img{max-width:100%}</style>
@@ -353,19 +558,64 @@ function render() {
 }
 const monthPicker = () => `<div class="monthpick"><button data-act="month" data-k="-1" aria-label="เดือนก่อน">‹</button><span>${monthLabel(ui.month)}</span><button data-act="month" data-k="1" aria-label="เดือนถัดไป">›</button></div>`;
 
+/* ---------- shared bits for the new look ---------- */
+const initial = n => { const s = String(n || '').trim().replace(/^(นาย|นางสาว|นาง|น\.ส\.)\s*/, ''); const c = [...s].find(ch => !/[เแโใไ\s]/.test(ch)); return c || '?'; };
+const hashN = s => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+const avatar = (name, cls = '') => `<span class="av a${hashN(name) % 6} ${cls}" title="${esc(name)}">${esc(initial(name))}</span>`;
+const ICON = {
+  check: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  chev: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  user: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+  bolt: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>',
+  drop: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg>',
+  plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  verified: '<svg width="22" height="22" viewBox="0 0 24 24"><path fill="var(--accent)" d="M12 1.5l2.6 1.9 3.2-.1 1 3.1 2.6 1.9-1 3.1 1 3.1-2.6 1.9-1 3.1-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3.1-2.6-1.9 1-3.1-1-3.1 2.6-1.9 1-3.1 3.2.1z"/><path d="M8 12.2l2.7 2.7L16.3 9.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  bill: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>',
+  wrench: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3 17.8V21h3.2l6.3-6.3a4 4 0 0 0 5.2-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>',
+  doc: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>',
+  gauge: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/></svg>',
+  target: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l7-7M16 4h3v3"/></svg>'
+};
+function houseArt() {
+  return `<svg viewBox="0 0 170 150" aria-hidden="true">
+  <ellipse cx="88" cy="132" rx="70" ry="12" fill="rgba(0,0,0,.12)"/>
+  <circle cx="26" cy="112" r="16" fill="#7fd3a0"/><rect x="24" y="112" width="4" height="18" rx="2" fill="#2e7d4a"/>
+  <polygon points="40,70 92,96 92,140 40,114" fill="#e9edff"/>
+  <polygon points="92,96 150,66 150,110 92,140" fill="#c9d1fb"/>
+  <polygon points="34,72 96,40 156,66 92,98" fill="#25336b"/>
+  <polygon points="96,40 34,72 30,66 96,32" fill="#1a2550"/>
+  <polygon points="96,32 162,62 156,66 96,40" fill="#34458a"/>
+  <polygon points="104,96 116,90 116,108 104,114" fill="#f6c86b"/><polygon points="126,85 138,79 138,97 126,103" fill="#f6c86b"/>
+  <polygon points="52,94 64,100 64,118 52,112" fill="#7b88c9"/><polygon points="70,103 82,109 82,138 70,132" fill="#5a67ad"/>
+  <polygon points="104,120 116,114 116,124 104,130" fill="#f6c86b"/>
+  </svg>`;
+}
+function roomArt(state, seed) {
+  const pal = state === 'occ' ? ['#ececfd', '#d8d9fa', '#4046d6'] : state === 'fix' ? ['#efedfd', '#dcd7fb', '#6a5bd8'] : ['#eef1f4', '#dfe4ea', '#9aa5b1'];
+  const bed = ['#f6c86b', '#8fb8f0', '#f19a7a', '#9ad6b0'][seed % 4];
+  return `<svg viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" fill="${pal[0]}"/>
+  <polygon points="12,44 60,20 60,70 12,94" fill="${pal[1]}"/><polygon points="60,20 108,44 108,94 60,70" fill="#fff" opacity=".75"/>
+  <polygon points="12,94 60,70 108,94 60,118" fill="#fff" opacity=".55"/>
+  <polygon points="74,38 92,47 92,64 74,55" fill="#bfe3ff"/><line x1="83" y1="42.5" x2="83" y2="59.5" stroke="#fff" stroke-width="1.5"/>
+  ${state === 'vacant' ? '' : `<polygon points="30,84 60,69 84,81 54,96" fill="${bed}"/><polygon points="30,84 54,96 54,102 30,90" fill="${pal[2]}" opacity=".8"/><polygon points="54,96 84,81 84,87 54,102" fill="${pal[2]}" opacity=".55"/><polygon points="62,72 70,68 78,72 70,76" fill="#fff"/>`}
+  ${state === 'fix' ? `<rect x="22" y="58" width="5" height="26" rx="2" fill="${pal[2]}"/><circle cx="24.5" cy="56" r="6" fill="none" stroke="${pal[2]}" stroke-width="4"/>` : `<rect x="22" y="70" width="8" height="10" rx="2" fill="#c98b5b"/><circle cx="26" cy="64" r="8" fill="#5bbf7e"/>`}
+  </svg>`;
+}
+
 /* ---------- dashboard ---------- */
 function viewDashboard() {
-  const m = ui.month, rs = rooms(), today = todayStr();
+  const m = ui.month, rs = rooms(), today = todayStr(), st = settings();
   const occ = rs.filter(r => roomState(r) === 'occ').length, vac = rs.filter(r => roomState(r) === 'vacant').length, fix = rs.filter(r => roomState(r) === 'fix').length;
   const rate = rs.length ? Math.round(occ / rs.length * 100) : 0;
   const mb = withId('bills').filter(b => b.month === m);
   const billed = mb.reduce((s, b) => s + billTotal(b), 0), got = mb.filter(b => b.status === 'paid').reduce((s, b) => s + billTotal(b), 0);
   const unpaid = withId('bills').filter(b => b.status !== 'paid').sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-  const owed = unpaid.reduce((s, b) => s + billTotal(b), 0);
+  const overdue = unpaid.filter(b => billState(b) === 'overdue');
   const noReading = rs.filter(r => roomState(r) === 'occ' && !readingOf(r.id, m));
   const repairs = withId('repairs').filter(r => r.status !== 'done').sort((a, b) => (a.reportedAt || '').localeCompare(b.reportedAt || ''));
   const ending = withId('tenants').filter(t => t.status === 'active' && t.contractEnd && daysBetween(today, t.contractEnd) <= 30).sort((a, b) => a.contractEnd.localeCompare(b.contractEnd));
-  const moving = withId('tenants').filter(t => t.status === 'active' && t.moveOutPlanned);
+  const moving = withId('tenants').filter(t => t.status === 'active' && t.moveOutPlanned && !ending.includes(t));
+  const active = withId('tenants').filter(t => t.status === 'active').sort((a, b) => String(roomById(a.roomId)?.no || '').localeCompare(String(roomById(b.roomId)?.no || ''), 'th', {numeric: true}));
 
   const hist = [...Array(6)].map((_, i) => addMonths(m, i - 5));
   const incomeData = hist.map(h => { const bs = withId('bills').filter(b => b.month === h); return {label: monthLabel(h, true), v: [bs.reduce((s, b) => s + billTotal(b), 0), bs.filter(b => b.status === 'paid').reduce((s, b) => s + billTotal(b), 0)]}; });
@@ -376,31 +626,48 @@ function viewDashboard() {
 
   const li = (left, mid, right, act = '') => `<div class="li" ${act}>${left}<div class="grow">${mid}</div>${right}</div>`;
   const more = (arr, n) => arr.length > n ? `<div class="small muted" style="padding-top:6px">และอีก ${arr.length - n} รายการ</div>` : '';
+  const pend = Math.max(0, billed - got), gp = billed ? got / billed * 100 : 0;
+  const sumBy = re => mb.reduce((s, b) => s + (b.items || []).filter(i => re.test(i.label)).reduce((t, i) => t + (+i.amount || 0), 0), 0);
+  const brk = [['ค่าเช่าห้อง', sumBy(/เช่า/), 'var(--accent)'], ['ค่าน้ำ', sumBy(/น้ำ/), 'var(--water)'], ['ค่าไฟ', sumBy(/ไฟ/), 'var(--elec)']];
+  brk.push(['ส่วนเสริมและอื่นๆ', Math.max(0, billed - brk.reduce((s, x) => s + x[1], 0)), 'var(--lime)']);
+  const dueNames = [...new Set(unpaid.map(b => b.tenantName))];
+  const acc = (open, icon, tone, title, n, body) => `<details ${open ? 'open' : ''}><summary><span class="ic" style="background:var(--${tone}-soft);color:var(--${tone})">${icon}</span>${title}<span class="n ${n ? '' : 'z'}">${n}</span><span class="chev">${ICON.chev}</span></summary><div class="body list">${body}</div></details>`;
 
   return `
-  <div class="head"><div><h2>ภาพรวม</h2><p>สรุปของเดือน${monthLabel(m)} · กดที่ห้องเพื่อดูรายละเอียด</p></div>${monthPicker()}</div>
-  <div class="stats">
-    <div class="stat"><div class="k">ห้องทั้งหมด</div><div class="v">${rs.length}</div><div class="s">ว่าง ${vac} · ปิดซ่อม ${fix}</div></div>
-    <div class="stat"><div class="k">มีผู้เช่า</div><div class="v">${occ}</div><div class="s">อัตราเข้าพัก ${rate}%</div><div class="meter"><i style="width:${rate}%"></i></div></div>
-    <div class="stat"><div class="k">เก็บได้เดือนนี้ (บาท)</div><div class="v">${baht(got)}</div><div class="s">จากที่ออกบิล ${baht(billed)}</div><div class="meter"><i style="width:${billed ? Math.round(got / billed * 100) : 0}%"></i></div></div>
-    <div class="stat ${owed ? 'bad' : ''}"><div class="k">ค้างชำระรวม (บาท)</div><div class="v">${baht(owed)}</div><div class="s">${unpaid.length} บิล ทุกเดือน</div></div>
+  <div class="hero">
+    <div class="hero-id"><div class="logo"><span>${esc(initial(st.dormName.replace(/^หอพัก/, '')))}</span></div>
+      <div><h2>${esc(st.dormName)} ${ICON.verified}</h2><div class="meta"><span>${rs.length} ห้อง</span><i></i><span>เข้าพัก ${rate}%</span><i></i><span>ว่าง ${vac} · ปิดซ่อม ${fix}</span></div>
+      <div class="mp">${monthPicker()}</div></div></div>
+    <div class="panel people"><header><h3>ผู้เช่า <i></i> <span class="num">${active.length}</span></h3><button class="btn sm" data-act="tenantForm">${ICON.plus} เพิ่มผู้เช่า</button></header>
+      <div class="grid-av">${active.slice(0, 13).map(t => `<span data-act="room" data-id="${t.roomId}" title="${esc(t.name)} · ห้อง ${esc(roomById(t.roomId)?.no || '')}" style="display:contents">${avatar(t.name)}</span>`).join('')}${active.length > 13 ? `<span class="av a1">+${active.length - 13}</span>` : ''}</div>
+      <footer><span>อัตราเข้าพัก</span><div class="meter"><i style="width:${rate}%"></i></div><b class="num">${rate}%</b></footer></div>
   </div>
-  <div class="panel" style="margin-bottom:14px"><h3>สถานะทุกห้อง · บิล${monthLabel(m)}</h3>${roomMap(m)}</div>
-  <div class="grid g2">
-    <div class="panel"><h3>บิลที่ยังไม่จ่าย <button class="btn sm" data-act="go" data-v="bills">ดูทั้งหมด</button></h3><div class="list">
-      ${unpaid.length ? unpaid.slice(0, 6).map(b => li(tag(b.roomNo), `<b>${esc(b.tenantName)}</b> <span class="muted small">· ${monthLabel(b.month, true)} · ครบกำหนด ${dateLabel(b.dueDate)}</span>`, `<span class="num">${baht(billTotal(b))}</span> ${billPill(b)}`, `data-act="bill" data-id="${b.id}" style="cursor:pointer"`)).join('') + more(unpaid, 6) : '<div class="empty">ไม่มีบิลค้าง ทุกห้องจ่ายครบแล้ว</div>'}
-    </div></div>
-    <div class="panel"><h3>ยังไม่จดมิเตอร์ (${monthLabel(m, true)}) <button class="btn sm" data-act="go" data-v="meters">ไปจดมิเตอร์</button></h3><div class="list">
-      ${noReading.length ? noReading.slice(0, 6).map(r => li(tag(r.no), esc(tenantOf(r.id)?.name || ''), '<span class="pill p-acc">รอจด</span>')).join('') + more(noReading, 6) : '<div class="empty">จดครบทุกห้องที่มีผู้เช่าแล้ว</div>'}
-    </div></div>
-    <div class="panel"><h3>งานซ่อมที่ค้าง <button class="btn sm" data-act="go" data-v="repairs">ดูทั้งหมด</button></h3><div class="list">
-      ${repairs.length ? repairs.slice(0, 6).map(r => li(tag(roomById(r.roomId)?.no || '-'), `<b>${esc(r.title)}</b> <span class="muted small">· แจ้ง ${dateLabel(r.reportedAt)}</span>`, r.status === 'doing' ? '<span class="pill p-fix">กำลังซ่อม</span>' : '<span class="pill p-warn">รอดำเนินการ</span>')).join('') + more(repairs, 6) : '<div class="empty">ไม่มีงานซ่อมค้าง</div>'}
-    </div></div>
-    <div class="panel"><h3>สัญญาใกล้หมดและผู้แจ้งย้ายออก</h3><div class="list">
-      ${ending.length || moving.length ? [...ending.map(t => { const d = daysBetween(today, t.contractEnd); return li(tag(roomById(t.roomId)?.no || '-'), `<b>${esc(t.name)}</b> <span class="muted small">· หมด ${dateLabel(t.contractEnd)}</span>`, d < 0 ? '<span class="pill p-bad">หมดสัญญาแล้ว</span>' : `<span class="pill p-warn">อีก ${d} วัน</span>`, `data-act="tenantForm" data-id="${t.id}" style="cursor:pointer"`); }),
-        ...moving.filter(t => !ending.includes(t)).map(t => li(tag(roomById(t.roomId)?.no || '-'), `<b>${esc(t.name)}</b> <span class="muted small">· จะย้ายออก ${dateLabel(t.moveOutPlanned)}</span>`, '<span class="pill p-idle">แจ้งย้ายออก</span>', `data-act="tenantForm" data-id="${t.id}" style="cursor:pointer"`))].join('') : '<div class="empty">ไม่มีสัญญาที่จะหมดใน 30 วัน</div>'}
-    </div></div>
-    <div class="panel"><h3>รายรับย้อนหลัง 6 เดือน <span class="keys"><span><i style="background:var(--line)"></i>ออกบิล</span><span><i style="background:var(--accent)"></i>เก็บได้</span></span></h3>${barChart(incomeData, ['var(--line)', 'var(--accent)'])}</div>
+
+  <div class="dash">
+    <div class="panel rent">
+      <div class="top"><header><h3>ค่าเช่าและค่าน้ำไฟ</h3><span class="pill p-acc">${monthLabel(m, true)}</span></header>
+        <div class="cap">ยอดออกบิลเดือนนี้</div><div class="total num">฿ ${baht(billed)}</div>
+        <div class="splitbar"><i class="g" style="flex:${gp || 0.001}"></i><i class="r" style="flex:${100 - gp || 0.001}"></i></div>
+        <div class="two"><div><span class="l ok">เก็บได้แล้ว</span><b class="num">฿ ${baht(got)}</b></div><div><span class="l bd">รอชำระ</span><b class="num">฿ ${baht(pend)}</b></div></div>
+        <div class="brk"><div class="cap">แยกตามรายการ</div>${brk.map(([l, v, c]) => `<div class="bk"><i style="background:${c}"></i><span>${l}</span><b class="num">${baht(v)}</b><div class="bb"><s style="width:${billed ? Math.max(2, v / billed * 100) : 0}%;background:${c}"></s></div></div>`).join('')}</div></div>
+      <div class="due"><div><div class="lbl">ผู้เช่าที่ยังมีบิลค้าง ${dueNames.length ? `(${dueNames.length} คน)` : ''}</div>
+        ${dueNames.length ? `<div class="avstack">${dueNames.slice(0, 3).map(n => avatar(n)).join('')}${dueNames.length > 3 ? `<span class="av more">+${dueNames.length - 3}</span>` : ''}</div>` : '<div>ทุกคนจ่ายครบแล้ว</div>'}</div>
+        <button class="btn white" data-act="go" data-v="bills">${dueNames.length ? 'ส่งเตือนค่าเช่า' : 'ดูบิลทั้งหมด'}</button></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="promo">${houseArt()}<div><h3>${noReading.length ? `เหลือจดมิเตอร์อีก ${noReading.length} ห้อง` : 'จดมิเตอร์ครบแล้ว'}</h3><p>${noReading.length ? 'จดเลขน้ำไฟให้ครบ แล้วออกบิลเดือนนี้ได้ในคลิกเดียว' : 'พร้อมออกบิลของเดือน' + monthLabel(m)}</p><button class="btn white" data-act="go" data-v="meters">ไปจดมิเตอร์</button></div></div>
+      <div class="acc">
+        ${acc(true, ICON.bill, 'bad', 'บิลค้างชำระ', unpaid.length, unpaid.length ? unpaid.slice(0, 5).map(b => li(avatar(b.tenantName, 'sm'), `<b>${esc(b.tenantName)}</b> <span class="muted small">· ห้อง ${esc(b.roomNo)} · ครบ ${dateLabel(b.dueDate)}</span>`, `<span class="num">${baht(billTotal(b))}</span> ${billPill(b)}`, `data-act="bill" data-id="${b.id}" style="cursor:pointer"`)).join('') + more(unpaid, 5) : '<div class="empty">ไม่มีบิลค้าง</div>')}
+        ${acc(false, ICON.wrench, 'fix', 'งานซ่อมที่ค้าง', repairs.length, repairs.length ? repairs.slice(0, 5).map(r => li(tag(roomById(r.roomId)?.no || '-'), `<b>${esc(r.title)}</b> <span class="muted small">· แจ้ง ${dateLabel(r.reportedAt)}</span>`, r.status === 'doing' ? '<span class="pill p-fix">กำลังซ่อม</span>' : '<span class="pill p-warn">รอดำเนินการ</span>', 'data-act="go" data-v="repairs" style="cursor:pointer"')).join('') + more(repairs, 5) : '<div class="empty">ไม่มีงานซ่อมค้าง</div>')}
+        ${acc(false, ICON.doc, 'warn', 'สัญญาใกล้หมดและแจ้งย้ายออก', ending.length + moving.length, ending.length || moving.length ? [...ending.map(t => { const d = daysBetween(today, t.contractEnd); return li(avatar(t.name, 'sm'), `<b>${esc(t.name)}</b> <span class="muted small">· ห้อง ${esc(roomById(t.roomId)?.no || '-')} · หมด ${dateLabel(t.contractEnd)}</span>`, d < 0 ? '<span class="pill p-bad">หมดสัญญาแล้ว</span>' : `<span class="pill p-warn">อีก ${d} วัน</span>`, `data-act="tenantForm" data-id="${t.id}" style="cursor:pointer"`); }),
+          ...moving.map(t => li(avatar(t.name, 'sm'), `<b>${esc(t.name)}</b> <span class="muted small">· จะย้ายออก ${dateLabel(t.moveOutPlanned)}</span>`, '<span class="pill p-idle">แจ้งย้ายออก</span>', `data-act="tenantForm" data-id="${t.id}" style="cursor:pointer"`))].join('') : '<div class="empty">ไม่มีสัญญาที่จะหมดใน 30 วัน</div>')}
+        ${acc(false, ICON.gauge, 'accent', 'ยังไม่จดมิเตอร์', noReading.length, noReading.length ? noReading.slice(0, 8).map(r => li(tag(r.no), esc(tenantOf(r.id)?.name || ''), '<span class="pill p-acc">รอจด</span>', 'data-act="go" data-v="meters" style="cursor:pointer"')).join('') + more(noReading, 8) : '<div class="empty">จดครบทุกห้องแล้ว</div>')}
+      </div>
+    </div>
+
+    <div class="panel span2"><h3>ผังห้อง · สถานะบิล${monthLabel(m)} <button class="btn sm" data-act="go" data-v="rooms">ดูห้องทั้งหมด</button></h3>${roomMap(m)}</div>
+    <div class="panel"><h3>รายรับย้อนหลัง 6 เดือน <span class="keys"><span><i style="background:var(--accent-soft)"></i>ออกบิล</span><span><i style="background:var(--accent)"></i>เก็บได้</span></span></h3>${barChart(incomeData, ['var(--accent-soft)', 'var(--accent)'])}</div>
     <div class="panel"><h3>หน่วยน้ำไฟรวม <span class="keys"><span><i style="background:var(--water)"></i>น้ำ (ลบ.ม.)</span><span><i style="background:var(--elec)"></i>ไฟ (kWh)</span></span></h3>${barChart(useData, ['var(--water)', 'var(--elec)'], true)}</div>
   </div>`;
 }
@@ -444,14 +711,21 @@ function roomMap(m) {
 }
 
 /* ---------- rooms ---------- */
+/* ---------- rooms: unit cards ---------- */
 function viewRooms() {
   const rs = rooms(), st = settings();
-  const label = {occ: '<span class="pill p-ok">มีผู้เช่า</span>', vacant: '<span class="pill p-idle">ว่าง</span>', fix: '<span class="pill p-fix">ปิดซ่อม</span>'};
-  return `<div class="head"><div><h2>ห้องพัก</h2><p>${rs.length} ห้อง · ว่าง ${rs.filter(r => roomState(r) === 'vacant').length} ห้อง</p></div><div class="row">${rs.length < 16 ? '<button class="btn" data-act="bulkForm">สร้างหลายห้องทีเดียว</button>' : ''}<button class="btn primary" data-act="roomForm">เพิ่มห้อง</button></div></div>
-  ${rs.length ? `<div class="tablewrap"><table><thead><tr><th>ห้อง</th><th>ชั้น</th><th>ประเภท</th><th class="r">ค่าเช่า/เดือน</th><th>ส่วนเสริม</th><th class="r">รวม/เดือน</th><th>สถานะ</th><th>ผู้เช่า</th><th></th></tr></thead><tbody>
-  ${rs.map(r => `<tr><td>${tag(r.no)}</td><td>${esc(r.floor)}</td><td>${esc(r.type || '-')}</td><td class="r num">${baht(r.rent)}</td><td>${esc(addonText(r) || '-')}</td><td class="r num">${baht(roomMonthly(r, st))}</td><td>${label[roomState(r)]}</td><td>${esc(tenantOf(r.id)?.name || '-')}</td><td class="r"><button class="btn sm" data-act="room" data-id="${r.id}">เปิดห้อง</button></td></tr>`).join('')}
-  </tbody></table></div>` : '<div class="panel empty">ยังไม่มีห้องพัก กด "สร้างหลายห้องทีเดียว" เพื่อสร้าง 16 ห้องในครั้งเดียว</div>'}`;
+  const badge = {occ: `<span class="badge">${ICON.check} มีผู้เช่า</span>`, vacant: '<span class="badge vacant">ว่าง พร้อมเข้าอยู่</span>', fix: '<span class="badge fix">ปิดซ่อม</span>'};
+  return `<div class="head"><div><h2>ห้องพัก</h2><p>${rs.length} ห้อง · มีผู้เช่า ${rs.filter(r => roomState(r) === 'occ').length} · ว่าง ${rs.filter(r => roomState(r) === 'vacant').length} ห้อง</p></div><div class="row">${rs.length < 16 ? '<button class="btn" data-act="bulkForm">สร้างหลายห้องทีเดียว</button>' : ''}<button class="btn primary" data-act="roomForm">${ICON.plus} เพิ่มห้อง</button></div></div>
+  ${rs.length ? `<div class="units">${rs.map((r, i) => {
+    const s = roomState(r), t = tenantOf(r.id), u = usage(r, ui.month) || usage(r, addMonths(ui.month, -1));
+    return `<button class="unit" data-act="room" data-id="${r.id}"><div class="pic">${roomArt(s, i)}${badge[s]}</div>
+      <div><div class="no">ห้อง ${esc(r.no)}</div>${t ? `<div class="who">${esc(t.name)}</div>` : `<div class="who muted">${s === 'fix' ? 'กำลังปรับปรุง' : 'ยังไม่มีผู้เช่า'}</div>`}
+      <div class="lbl">ค่าเช่ารวม/เดือน</div><div class="amt num">฿${baht(roomMonthly(r, st))}</div>
+      <div class="icons"><span>${ICON.drop}${u ? baht(Math.max(0, u.w)) : '-'}</span><span>${ICON.bolt}${u ? baht(Math.max(0, u.e)) : '-'}</span>${roomAddons(r).length ? `<span>+${esc(addonText(r))}</span>` : ''}</div></div>
+      <div class="dates"><div><small>เริ่มสัญญา</small><b>${t ? dateLabel(t.moveIn) : '-'}</b></div><div><small>สิ้นสุดสัญญา</small><b>${t ? dateLabel(t.contractEnd) : '-'}</b></div></div></button>`;
+  }).join('')}</div>` : '<div class="panel empty">ยังไม่มีห้องพัก กด "สร้างหลายห้องทีเดียว" เพื่อสร้าง 16 ห้องในครั้งเดียว</div>'}`;
 }
+
 function roomForm(id) {
   const st = settings();
   const r = id ? roomById(id) : {no: '', floor: '', type: '', rent: st.defaultRent, startWater: 0, startElec: 0, maintenance: false, note: '', addons: {}};
@@ -548,7 +822,7 @@ function viewTenants() {
   ${list.length ? `<div class="cards">${list.map(t => {
     const r = roomById(t.roomId), left = t.contractEnd ? daysBetween(today, t.contractEnd) : null;
     const cpill = t.status !== 'active' ? `<span class="pill p-idle">ย้ายออก ${dateLabel(t.moveOut)}</span>` : left === null ? '' : left < 0 ? '<span class="pill p-bad">หมดสัญญาแล้ว</span>' : left <= 30 ? `<span class="pill p-warn">สัญญาเหลือ ${left} วัน</span>` : '<span class="pill p-ok">สัญญาปกติ</span>';
-    return `<div class="card"><div class="top"><div><h3>${esc(t.name)}</h3><div class="small muted">${esc(t.phone || '')}</div></div>${tag(r?.no || '-')}</div>
+    return `<div class="card"><div class="top"><div class="id">${avatar(t.name)}<div><h3>${esc(t.name)}</h3><div class="small muted">${esc(t.phone || '')}</div></div></div>${tag(r?.no || '-')}</div>
     <dl class="kv"><dt>เข้าพัก</dt><dd>${dateLabel(t.moveIn)}</dd><dt>สิ้นสุดสัญญา</dt><dd>${dateLabel(t.contractEnd)}</dd><dt>เงินประกัน</dt><dd class="num">${baht(t.deposit)} บาท</dd>
     ${t.status !== 'active' ? `<dt>คืนประกัน</dt><dd class="num">${baht(t.refund)} บาท</dd>` : ''}${t.emergencyName ? `<dt>ติดต่อฉุกเฉิน</dt><dd>${esc(t.emergencyName)} ${esc(t.emergencyPhone || '')}</dd>` : ''}</dl>
     <div class="row" style="justify-content:space-between">${cpill}<div class="row"><button class="btn sm" data-act="tenantForm" data-id="${t.id}">แก้ไข</button>${t.status === 'active' ? `<button class="btn sm" data-act="moveOut" data-id="${t.id}">ย้ายออก</button>` : ''}</div></div></div>`;
@@ -659,19 +933,38 @@ async function genBills() {
 
 /* ---------- bills ---------- */
 function viewBills() {
-  const m = ui.month, f = ui.billFilter;
+  const m = ui.month, f = ui.billFilter, st = settings();
   const all = withId('bills').filter(b => b.month === m).sort((a, b) => String(a.roomNo).localeCompare(String(b.roomNo), 'th', {numeric: true}));
   const list = all.filter(b => f === 'all' || (f === 'paid' ? b.status === 'paid' : b.status !== 'paid'));
   const sum = all.reduce((s, b) => s + billTotal(b), 0), paid = all.filter(b => b.status === 'paid').reduce((s, b) => s + billTotal(b), 0);
   const older = withId('bills').filter(b => b.month < m && b.status !== 'paid');
-  return `<div class="head"><div><h2>บิลและการชำระ</h2><p>${all.length} บิล · ยอดรวม ${baht(sum)} บาท · เก็บแล้ว ${baht(paid)} บาท</p></div><div class="row">${monthPicker()}<button class="btn" data-act="go" data-v="meters">จดมิเตอร์และออกบิล</button><button class="btn" data-act="exportExcel">ส่งออก Excel</button></div></div>
+  const phone = b => { const t = S.tenants[b.tenantId]; return t?.phone || ''; };
+  const part = (b, re) => (b.items || []).filter(i => re.test(i.label)).reduce((s, i) => s + (+i.amount || 0), 0);
+  const expand = b => {
+    const tot = billTotal(b) || 1, rent = part(b, /เช่า/), w = part(b, /น้ำ/), e = part(b, /ไฟ/), other = Math.max(0, tot - rent - w - e);
+    const pc = v => Math.round(v / tot * 100);
+    return `<tr class="xp"><td colspan="7"><div class="xgrid">
+      <div><h4>${ICON.target} ยอดบิล ${baht(tot)} บาท</h4><div class="vs"><div><div class="small">ค่าเช่า</div><div class="pct num">${pc(rent)}%</div><div class="small muted num">${baht(rent)}</div></div><div class="mid">VS</div><div><div class="small">ค่าน้ำไฟ</div><div class="pct num">${pc(w + e)}%</div><div class="small muted num">${baht(w + e)}</div></div></div>
+        <div class="vsbar"><i style="flex:${rent || 0.01};background:var(--accent)"></i><i style="flex:${w + e || 0.01};background:var(--line)"></i></div></div>
+      <div><h4>${ICON.drop} <span class="num">${baht(b.waterUnits)}</span> <small class="muted" style="font-size:.8rem;font-weight:500">หน่วย</small></h4><div class="pct num">${pc(w)}%</div><div class="sub">ค่าน้ำ ${baht(w)} บาท</div><div class="xbar blue" style="width:${Math.max(12, Math.min(100, pc(w) * 4))}%"></div></div>
+      <div><h4>${ICON.bolt} <span class="num">${baht(b.elecUnits)}</span> <small class="muted" style="font-size:.8rem;font-weight:500">หน่วย</small></h4><div class="pct num">${pc(e)}%</div><div class="sub">ค่าไฟ ${baht(e)} บาท</div><div class="xbar org" style="width:${Math.max(12, Math.min(100, pc(e) * 3))}%"></div></div>
+      <div><h4>${ICON.plus} <span class="num">${baht(other)}</span> <small class="muted" style="font-size:.8rem;font-weight:500">บาท</small></h4><div class="pct num">${pc(other)}%</div><div class="sub">ส่วนเสริมและอื่นๆ</div><div class="xbar ${other ? 'lime' : 'hatch'}"></div></div>
+    </div><div class="xact"><button class="btn sm" data-act="bill" data-id="${b.id}">ดูบิลเต็ม</button>${b.status !== 'paid' ? `<button class="btn sm primary" data-act="pay" data-id="${b.id}">รับชำระ</button>` : ''}</div></td></tr>`;
+  };
+  return `<div class="toolbar"><h2>บิลและการชำระ</h2>
+    <div class="seg">${[['all', 'ทั้งหมด'], ['unpaid', 'ยังไม่จ่าย'], ['paid', 'จ่ายแล้ว']].map(([k, t]) => `<button data-act="bFilter" data-f="${k}" aria-pressed="${f === k}">${t}</button>`).join('')}</div>
+    <span class="sp"></span>${monthPicker()}<button class="btn" data-act="go" data-v="meters">${ICON.gauge} จดมิเตอร์</button><button class="btn" data-act="exportExcel">ส่งออก Excel</button></div>
+  <div class="sumrow"><div class="stat"><div class="k">ยอดรวมเดือนนี้</div><div class="v num">฿${baht(sum)}</div><div class="s">${all.length} บิล</div></div>
+    <div class="stat"><div class="k">เก็บแล้ว</div><div class="v num" style="color:var(--accent)">฿${baht(paid)}</div><div class="meter"><i style="width:${sum ? Math.round(paid / sum * 100) : 0}%"></i></div></div>
+    <div class="stat"><div class="k">รอชำระ</div><div class="v num" style="color:${sum - paid ? 'var(--bad)' : 'inherit'}">฿${baht(sum - paid)}</div><div class="s">${all.filter(b => b.status !== 'paid').length} บิล</div></div></div>
   ${older.length ? `<div class="banner warn"><span>ยังมีบิลเดือนก่อนค้างอยู่ ${older.length} บิล รวม ${baht(older.reduce((s, b) => s + billTotal(b), 0))} บาท</span><button class="btn sm" data-act="month" data-to="${older.sort((a, b) => a.month.localeCompare(b.month))[0].month}">ดูเดือนที่ค้าง</button></div>` : ''}
-  <div class="chips">${[['all', 'ทั้งหมด'], ['unpaid', 'ยังไม่จ่าย'], ['paid', 'จ่ายแล้ว']].map(([k, t]) => `<button class="chip" data-act="bFilter" data-f="${k}" aria-pressed="${f === k}">${t}</button>`).join('')}</div>
-  ${list.length ? `<div class="tablewrap"><table><thead><tr><th>ห้อง</th><th>ผู้เช่า</th><th class="r">น้ำ</th><th class="r">ไฟ</th><th class="r">ยอดรวม (บาท)</th><th>ครบกำหนด</th><th>สถานะ</th><th></th></tr></thead><tbody>
-  ${list.map(b => `<tr><td>${tag(b.roomNo)}</td><td>${esc(b.tenantName)}</td><td class="r num">${baht(b.waterUnits)}</td><td class="r num">${baht(b.elecUnits)}</td><td class="r num"><b>${baht(billTotal(b))}</b></td><td>${dateLabel(b.dueDate)}</td><td>${billPill(b)}</td>
-  <td class="r"><div class="row" style="justify-content:flex-end"><button class="btn sm" data-act="bill" data-id="${b.id}">ดูบิล</button>${b.status !== 'paid' ? `<button class="btn sm primary" data-act="pay" data-id="${b.id}">รับชำระ</button>` : ''}</div></td></tr>`).join('')}
+  ${list.length ? `<div class="tablewrap"><table class="htable"><thead><tr><th style="width:44px"><input type="checkbox" aria-label="เลือกทั้งหมด"></th><th>ห้อง, ผู้เช่า</th><th class="r">ยอดรวม (บาท)</th><th>ครบกำหนด ↓</th><th>สถานะ</th><th>ติดต่อ</th><th></th></tr></thead><tbody>
+  ${list.map(b => { const open = ui.billOpen === b.id; return `<tr class="${open ? 'open' : ''}"><td><input type="checkbox" aria-label="เลือกบิลห้อง ${esc(b.roomNo)}"></td><td><div class="two"><b>ห้อง ${esc(b.roomNo)}</b><span>${esc(b.no || '')}</span></div></td><td class="r num"><b>${baht(billTotal(b))}</b></td><td>${dateLabel(b.dueDate)}</td><td>${billPill(b)}</td>
+    <td><div class="who">${avatar(b.tenantName, 'sm')}<div class="two"><b>${esc(b.tenantName)}</b><span>${esc(phone(b))}</span></div></div></td>
+    <td class="r"><button class="lnk" data-act="bOpen" data-id="${b.id}" aria-expanded="${open}">${open ? 'ย่อ' : 'ดูเพิ่ม'}</button></td></tr>${open ? expand(b) : ''}`; }).join('')}
   </tbody></table></div>` : `<div class="panel empty">${all.length ? 'ไม่มีบิลในตัวกรองนี้' : 'ยังไม่ได้ออกบิลของเดือนนี้ ไปที่หน้าจดมิเตอร์เพื่อจดเลขแล้วกดออกบิล'}</div>`}`;
 }
+
 function billText(b) {
   const st = settings();
   return `${st.dormName}\nบิลค่าเช่าห้อง ${b.roomNo} · ${monthLabel(b.month)}\nเลขที่ ${b.no}\n\n` +
@@ -875,6 +1168,7 @@ document.addEventListener('click', async ev => {
     case 'moveOutSave': moveOutSave(id); break;
     case 'genBills': el.disabled = true; await genBills(); break;
     case 'bFilter': ui.billFilter = el.dataset.f; render(); break;
+    case 'bOpen': ui.billOpen = ui.billOpen === id ? '' : id; render(); break;
     case 'bill': billModal(id); break;
     case 'pay': payForm(id); break;
     case 'paySave': paySave(id); break;
