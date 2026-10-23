@@ -474,10 +474,10 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
 .people footer .meter{background:rgba(255,255,255,.22)}
 .people footer .meter i{background:linear-gradient(90deg,#fff,#cfe0ff)}
 @media (max-width:600px){.people .pp-art{width:104px;bottom:46px}.people .grid-av{padding-right:100px;min-height:80px}}
-/* phone: let the dorm photo show above the header before the first card */
+/* phone: header at the top, then a clear view of the dorm photo before the first card */
 @media (max-width:600px){
-  .hero{padding-top:230px}
-  main::before{top:-110px;height:720px;opacity:.36;background-position:50% 0;mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%);-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%)}
+  .hero{padding-top:4px;margin-bottom:200px}
+  main::before{top:0;height:640px;opacity:.38;background-position:50% 0;mask-image:linear-gradient(180deg,#000 0%,#000 78%,transparent 100%);-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 78%,transparent 100%)}
 }
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
 </style>
