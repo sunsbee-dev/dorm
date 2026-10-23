@@ -485,11 +485,12 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
 /* month picker: flat and plain, no glass shine */
 .monthpick{background:var(--surface);border:1px solid var(--line);box-shadow:none}
 .monthpick button:hover{background:var(--surface-2);box-shadow:none}
-/* phone and tablet: smaller scrolling tabs so more fit on one line */
+/* phone and tablet: compact pills that wrap so every menu item shows at once */
 @media (max-width:899px){
-  nav.tabs{gap:2px;padding:4px 10px 6px}
-  .tab{padding:5px 9px;font-size:.82rem;border-radius:9px;gap:5px}
-  .tab[aria-current="page"]{box-shadow:inset 2px 0 0 var(--accent)}
+  nav.tabs{flex-wrap:wrap;overflow:visible;gap:5px;padding:4px 12px 8px}
+  .tab{padding:5px 10px;font-size:.8rem;border-radius:99px;gap:5px;background:var(--surface);border:1px solid var(--line)}
+  .tab[aria-current="page"]{border-color:transparent}
+  .tab[aria-current="page"]{box-shadow:none}
   .tab .badge{min-width:16px;height:16px;font-size:.62rem;padding:0 4px}
 }
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
