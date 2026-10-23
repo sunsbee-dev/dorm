@@ -12,9 +12,9 @@
 :root{
   --bg:#f6f8fc; --surface:#ffffff; --surface-2:#f2f5fa; --ink:#111c33; --muted:#6c7890; --line:#e6ebf3;
   --accent:#1f4bb8; --accent-ink:#ffffff; --accent-soft:#e7eefb; --gold:#1f4bb8; --gold-ink:#ffffff;
-  --navy:#0f2552; --navy-2:#0a1b3f; --navy-ink:#f2f2ff; --lime:#c99a3b; --coral:#c99a3b; --magenta:#c99a3b; --magenta-soft:#fbf3e2;
+  --navy:#0f2552; --navy-2:#0a1b3f; --navy-ink:#f2f2ff; --lime:#c99a3b; --coral:#d9645c; --magenta:#c99a3b; --magenta-soft:#fbf3e2;
   --frame:linear-gradient(120deg,#c9dcf7 0%,#d9c8f3 38%,#efc6dd 70%,#f6d6c4 100%);
-  --ok:#2fae55; --ok-soft:#e4f6ea; --warn:#a8741c; --warn-soft:#fbf2df; --bad:#b3234a; --bad-soft:#fbe9ee;
+  --ok:#2fae55; --ok-soft:#e4f6ea; --warn:#c46f25; --warn-soft:#fbefe3; --bad:#c73a5e; --bad-soft:#fbe8ee;
   --idle:#8b95a1; --idle-soft:#eef1f4; --fix:#6a5bd8; --fix-soft:#efedfd;
   --water:#1f4bb8; --elec:#c99a3b;
   --f-display:"Prompt","IBM Plex Sans Thai",system-ui,sans-serif;
@@ -25,17 +25,17 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0b1424; --surface:#13203a; --surface-2:#1a2a48; --ink:#eef3fb; --muted:#9fb0c8; --line:#26375a;
   --accent:#7aa7ff; --accent-ink:#061430; --accent-soft:#16294f; --gold:#7aa7ff; --gold-ink:#061430;
-  --navy:#0f2552; --navy-2:#0a1b3f; --navy-ink:#f2f2ff; --lime:#e2b866; --coral:#e2b866; --magenta:#e2b866; --magenta-soft:#3a2e16;
+  --navy:#0f2552; --navy-2:#0a1b3f; --navy-ink:#f2f2ff; --lime:#e2b866; --coral:#f08e86; --magenta:#e2b866; --magenta-soft:#3a2e16;
   --frame:linear-gradient(120deg,#1b2350 0%,#2a1e4f 45%,#3a1d3c 100%);
-  --ok:#5fd488; --ok-soft:#163a26; --warn:#e8bf6a; --warn-soft:#3a2614; --bad:#f08aa2; --bad-soft:#3d1a22;
+  --ok:#5fd488; --ok-soft:#163a26; --warn:#f0a668; --warn-soft:#3a2614; --bad:#fb8aa0; --bad-soft:#3d1a22;
   --idle:#8b95a1; --idle-soft:#1d2b3a; --fix:#aca0ff; --fix-soft:#25224a;
   --water:#7aa7ff; --elec:#e2b866; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0b1424; --surface:#13203a; --surface-2:#1a2a48; --ink:#eef3fb; --muted:#9fb0c8; --line:#26375a;
   --accent:#7aa7ff; --accent-ink:#061430; --accent-soft:#16294f; --gold:#7aa7ff; --gold-ink:#061430;
-  --navy:#0f2552; --navy-2:#0a1b3f; --navy-ink:#f2f2ff; --lime:#e2b866; --coral:#e2b866; --magenta:#e2b866; --magenta-soft:#3a2e16;
+  --navy:#0f2552; --navy-2:#0a1b3f; --navy-ink:#f2f2ff; --lime:#e2b866; --coral:#f08e86; --magenta:#e2b866; --magenta-soft:#3a2e16;
   --frame:linear-gradient(120deg,#1b2350 0%,#2a1e4f 45%,#3a1d3c 100%);
-  --ok:#5fd488; --ok-soft:#163a26; --warn:#e8bf6a; --warn-soft:#3a2614; --bad:#f08aa2; --bad-soft:#3d1a22;
+  --ok:#5fd488; --ok-soft:#163a26; --warn:#f0a668; --warn-soft:#3a2614; --bad:#fb8aa0; --bad-soft:#3d1a22;
   --idle:#8b95a1; --idle-soft:#1d2b3a; --fix:#aca0ff; --fix-soft:#25224a;
   --water:#7aa7ff; --elec:#e2b866; color-scheme:dark}
 *{box-sizing:border-box}
@@ -409,24 +409,18 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
 .chip[aria-pressed="true"]{background:linear-gradient(180deg,#2f63d9,#173a96);color:#fff;border-color:rgba(255,255,255,.4)}
 .acc summary .chev{border-radius:50%}
 
-/* luxe accents: navy banner, champagne-gold highlights instead of coral */
-:root{--gold-a:#e9c46f;--gold-b:#b8862a;--lux-ink:#1a1405}
-.promo{background:radial-gradient(120% 140% at 85% 0%,rgba(233,196,111,.22),transparent 55%),linear-gradient(135deg,#0f2552 0%,#1a3c8f 100%);box-shadow:0 0 0 1px rgba(233,196,111,.28),var(--shadow)}
-.promo h3{color:#f7e7bd}
-.btn.white{background:linear-gradient(180deg,#f6e3a8,#d6a94f);color:#14213f;border-color:rgba(255,255,255,.55);font-weight:600;
-  box-shadow:0 0 0 1px rgba(184,134,42,.45),0 8px 20px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.75),inset 0 -3px 8px rgba(120,80,10,.18)}
-.btn.white:hover{color:#14213f;box-shadow:0 0 0 1px rgba(184,134,42,.5),0 12px 26px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.75),inset 0 -3px 8px rgba(120,80,10,.18)}
-.rent .due{background:radial-gradient(120% 160% at 100% 0%,rgba(233,196,111,.18),transparent 55%),linear-gradient(135deg,#0a1b3f,#13306f);box-shadow:inset 0 1px 0 rgba(233,196,111,.3)}
-.splitbar .r{background:linear-gradient(90deg,var(--gold-a),var(--gold-b))}
-.splitbar .g{background:linear-gradient(90deg,#2d63d6,#163b9a)}
-.rent .two .ok{color:var(--accent)}
-.rent .two .bd{color:var(--gold-b)}
-.acc summary .n,.tab .badge{background:linear-gradient(180deg,var(--gold-a),var(--gold-b));color:var(--lux-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 6px rgba(184,134,42,.3)}
+/* luxe accents: same coral, rose and amber hues in deeper, richer shades with soft sheen */
+:root{--coral-a:#ec8676;--coral-b:#c24f4b}
+.promo{background:radial-gradient(120% 140% at 88% 0%,rgba(255,228,206,.38),transparent 55%),linear-gradient(135deg,var(--coral-a) 0%,var(--coral-b) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 14px 30px rgba(194,79,75,.26)}
+.promo .btn.white{color:#a8403c}
+.promo .btn.white:hover{color:#8f312e}
+.rent .due{background:radial-gradient(120% 160% at 100% 0%,rgba(122,167,255,.16),transparent 55%),linear-gradient(135deg,#0f2552,#183c86);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.splitbar .r,.xbar.org{background:linear-gradient(90deg,var(--coral-a),var(--coral-b))}
+.splitbar .g{background:linear-gradient(90deg,#4cc472,#23924a)}
+.acc summary .n,.tab .badge{background:linear-gradient(180deg,var(--coral-a),var(--coral-b));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 6px rgba(194,79,75,.28)}
 .btn{color:var(--ink);letter-spacing:.01em}
-.btn:hover{color:var(--accent);border-color:rgba(233,196,111,.75)}
-.btn.primary{box-shadow:0 0 0 1px rgba(23,58,150,.35),0 0 0 2px rgba(233,196,111,.0),0 8px 20px rgba(31,75,184,.3),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -3px 8px rgba(0,0,0,.16)}
+.btn.danger[data-armed]{background:linear-gradient(180deg,#d9506f,#ad2c4e)}
 .brand .mark,.hero-id .logo span{background:linear-gradient(135deg,#2f63d9,#0f2552);box-shadow:0 6px 14px rgba(15,37,82,.35),inset 0 1px 0 rgba(255,255,255,.3)}
-.hero-id .logo{box-shadow:0 0 0 1px rgba(233,196,111,.35),var(--shadow)}
 
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
 </style>
