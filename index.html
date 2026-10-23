@@ -474,6 +474,14 @@ main::before{content:"";position:absolute;left:0;right:0;top:0;height:clamp(380p
 .people footer .meter{background:rgba(255,255,255,.22)}
 .people footer .meter i{background:linear-gradient(90deg,#fff,#cfe0ff)}
 @media (max-width:600px){.people .pp-art{width:104px;bottom:46px}.people .grid-av{padding-right:100px;min-height:80px}}
+/* phone: smaller room-map tiles, five to a row */
+@media (max-width:600px){
+  .rooms{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+  .cell{padding:7px 2px 6px;font-size:.78rem;border-radius:10px}
+  .cell .ric{width:24px;height:22px;margin-bottom:3px}
+  .cell .who{font-size:.58rem;margin-top:1px}
+  .cell small{font-size:.55rem;margin-top:1px}
+}
 @media (prefers-reduced-motion:no-preference){.modal .box{animation:pop .16s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:.6}}}
 </style>
 <style>body{margin:0}html,body{height:100%}img{max-width:100%}</style>
